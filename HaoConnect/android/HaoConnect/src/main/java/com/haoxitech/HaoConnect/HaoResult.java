@@ -131,7 +131,7 @@ public class HaoResult {
     public Object value(JsonElement value) {
         if (value instanceof JsonObject) {
             if (((JsonObject) value).get("modelType") != null) {
-                return HaoResult.instanceModel(value, this.errorCode, this.errorStr, this.extraInfo);
+                return HaoResult.instanceModel(value.getAsJsonObject(), this.errorCode, this.errorStr, this.extraInfo);
             }
         } else if (value instanceof JsonArray) {
             ArrayList<Object> array = new ArrayList<>();
@@ -161,7 +161,8 @@ public class HaoResult {
 
     public String findAsString(String path) {
         try {
-            return find(path).toString();
+            JsonElement result = (JsonElement) find(path);
+            return result.getAsString();
         } catch (Exception e) {
         }
         return "";
@@ -192,16 +193,10 @@ public class HaoResult {
             resultObjc.add("results", this.results);
             resultObjc.add("extraInfo", this.extraInfo);
             ArrayList<String> resultsIndex = HaoUtility.getKeyIndexArray(resultObjc);
-//            JsonObject extraInfoObjc = new JsonObject();
-//            extraInfoObjc.add("extraInfo", this.extraInfo);
-//            ArrayList<String> extraIndex = HaoUtility.getKeyIndexArray(extraInfoObjc);
-//            resultsIndex.addAll(extraIndex);
-
-            ArrayList<String> searchIndex = resultsIndex;
 
             StringBuffer tempIndex = new StringBuffer();
-            for (int i = 0; i < searchIndex.size(); i++) {
-                tempIndex.append(searchIndex.get(i) + "\n");
+            for (int i = 0; i < resultsIndex.size(); i++) {
+                tempIndex.append(resultsIndex.get(i) + "\n");
             }
             HaoUtility.print(tempIndex.toString());
             this.searchIndexString = tempIndex.toString();

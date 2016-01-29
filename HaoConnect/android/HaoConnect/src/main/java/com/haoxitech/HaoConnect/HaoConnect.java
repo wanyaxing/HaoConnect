@@ -5,18 +5,16 @@ import android.content.SharedPreferences;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import com.loopj.android.http.AsyncHttpResponseHandler;
+import com.loopj.android.http.JsonHttpResponseHandler;
+import com.loopj.android.http.RequestHandle;
 import com.loopj.android.http.RequestParams;
+import com.loopj.android.http.TextHttpResponseHandler;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import cz.msebera.android.httpclient.Header;
 
 /**
  * Created by wangtao on 15/12/21.
@@ -78,8 +76,9 @@ public class HaoConnect {
 
     /**
      * 设置用户相关信息
-     * @param userID        用户id
-     * @param loginTime     登录时间
+     *
+     * @param userID    用户id
+     * @param loginTime 登录时间
      * @param checkCode
      */
     public static void setCurrentUserInfo(String userID, String loginTime, String checkCode) {
@@ -94,6 +93,7 @@ public class HaoConnect {
 
     /**
      * 推送token
+     *
      * @param deviceToken
      */
     public static void setCurrentDeviceToken(String deviceToken) {
@@ -105,7 +105,7 @@ public class HaoConnect {
      * @param urlParam
      * @return 请求头数据，里面包括加密字段
      */
-    private static Map<String, Object> getSecretHeaders(Map<String, Object> requestData, String urlParam) {
+    public static Map<String, Object> getSecretHeaders(Map<String, Object> requestData, String urlParam) {
         Map<String, Object> headers = new HashMap<>();
         headers.put("Clientinfo", Clientinfo);
         headers.put("Clientversion", Clientversion);
@@ -114,8 +114,7 @@ public class HaoConnect {
         headers.put("Devicetoken", Devicetoken);
         headers.put("Isdebug", "0");
 
-        if (Userid == null || Userid.equals(""))
-        {
+        if (Userid == null || Userid.equals("")) {
             Userid = getString("userID");
             Logintime = getString("loginTime");
             Checkcode = getString("checkCode");
@@ -152,111 +151,35 @@ public class HaoConnect {
         return HaoUtility.encodeMD5String(secret);
     }
 
-    public static void loadContent(String urlParam, Map<String, Object> params, String method, final HaoRequestResopnse haoRequestResopnse, Context context) {
+    public static RequestHandle loadContent(String urlParam, Map<String, Object> params, String method, TextHttpResponseHandler resonpse, Context context) {
 
         if (Clientinfo == null || Clientinfo.length() == 0) {
             Toast.makeText(context, "请先初始化HaoConnect,在程序开始的地方调用init()方法", Toast.LENGTH_SHORT).show();
-            return;
+            return null;
         }
         RequestParams requestParams = new RequestParams();
-        for (Map.Entry<String, Object> entry : params.entrySet()) {
-            requestParams.put(entry.getKey(), entry.getValue() + "");
+        if (params != null)
+        {
+            for (Map.Entry<String, Object> entry : params.entrySet()) {
+                requestParams.put(entry.getKey(), entry.getValue() + "");
+            }
         }
-        HaoHttpClient.loadContent("http://" + ApiHost + "/" + urlParam, requestParams, method, getSecretHeaders(params, urlParam), new AsyncHttpResponseHandler() {
-            @Override
-            public void onSuccess(int i, Header[] headers, byte[] bytes) {
-                String response = new String(bytes);
-                haoRequestResopnse.requestOnSuccess(response);
-            }
-
-            @Override
-            public void onFailure(int i, Header[] headers, byte[] bytes, Throwable throwable) {
-                String response = new String(bytes);
-                haoRequestResopnse.requestOnSuccess(response);
-            }
-
-            @Override
-            public void onStart() {
-                super.onStart();
-                haoRequestResopnse.requestOnStart();
-            }
-        }, context);
+        return HaoHttpClient.loadContent("http://" + ApiHost + "/" + urlParam, requestParams, method, getSecretHeaders(params, urlParam), resonpse, context);
     }
 
-    public static void loadJson(String urlParam, Map<String, Object> params, String method, final HaoRequestResopnse haoRequestResopnse, Context context) {
-        loadContent(urlParam, params, method, new HaoRequestResopnse() {
-            @Override
-            public void requestOnSuccess(Object result) {
-                try {
-                    Gson gson = new Gson();
-                    JsonObject jsonObject = gson.fromJson(result.toString(), JsonObject.class);
-                    haoRequestResopnse.requestOnSuccess(jsonObject);
-                } catch (Exception e) {
-                    haoRequestResopnse.requestOnFail("json解析失败，请检查返回结果");
-                }
-            }
-
-            @Override
-            public void requestOnStart() {
-                haoRequestResopnse.requestOnStart();
-            }
-
-            @Override
-            public void requestOnFail(Object results) {
-                haoRequestResopnse.requestOnFail(results);
-            }
-        }, context);
+    public static RequestHandle loadJson(String urlParam, Map<String, Object> params, String method, JsonHttpResponseHandler response, Context context) {
+        return loadContent(urlParam, params, method, response, context);
     }
 
-    public static void request(String urlParam, Map<String, Object> params, String method, final HaoConnectResponse haoConnectResponse, Context context) {
-
-        loadJson(urlParam, params, method, new HaoRequestResopnse() {
-            @Override
-            public void requestOnSuccess(Object result) {
-                try {
-                    JsonObject jsonObject = (JsonObject) result;
-                    HaoResult haoResult = (HaoResult) HaoResult.instanceModel(jsonObject.get("results"), jsonObject.get("errorCode").getAsInt(), jsonObject.get("errorStr").getAsString(), jsonObject.get("extraInfo"));
-
-                    if (haoResult.isResultsOK()) {
-                        haoConnectResponse.requestOnSuccess(haoResult);
-                    } else {
-                        haoConnectResponse.requestOnFail(haoResult);
-                    }
-                } catch (Exception e) {
-                    HaoResult haoResult = (HaoResult) HaoResult.instanceModel(null, -1, e.toString(), null);
-                    haoConnectResponse.requestOnFail(haoResult);
-                }
-            }
-
-            @Override
-            public void requestOnStart() {
-                haoConnectResponse.requestOnStart();
-            }
-
-            @Override
-            public void requestOnFail(Object results) {
-
-                HaoResult haoResult = (HaoResult) HaoResult.instanceModel(null, -1, results.toString(), null);
-                haoConnectResponse.requestOnFail(haoResult);
-            }
-        }, context);
+    public static RequestHandle request(String urlParam, Map<String, Object> params, String method, HaoResultHttpResponseHandler response, Context context) {
+        return loadContent(urlParam, params, method, response, context);
     }
 
     public static void cancelRequest(Context context) {
         HaoHttpClient.cancelRequest(context);
     }
 
-    public interface HaoRequestResopnse
-    {
-        void requestOnSuccess(Object result);
-
-        void requestOnStart();
-
-        void requestOnFail(Object result);
-    }
-
-    public static void putString(String key, String value)
-    {
+    public static void putString(String key, String value) {
         try {
             //AppContext 这里是Demo里面的Application子类，开发时候需要替换成自己相关的类
             SharedPreferences sharedPreferences = Ctx.getSharedPreferences("config",
@@ -264,19 +187,20 @@ public class HaoConnect {
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.putString(key, value);
             editor.commit();
-        }catch (Exception e){
+        } catch (Exception e) {
             Log.e("putStringInfo", e.getMessage());
         }
     }
 
-    public static String getString(String key)
-    {
+    public static String getString(String key) {
         try {
             SharedPreferences sharedPreferences = Ctx.getSharedPreferences("config",
                     0);
             return sharedPreferences.getString(key, null);
-        }catch (Exception e){
+        } catch (Exception e) {
             return "";
         }
     }
+
+
 }

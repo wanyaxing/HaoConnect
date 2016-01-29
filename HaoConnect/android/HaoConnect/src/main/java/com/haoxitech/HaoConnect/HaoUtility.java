@@ -96,67 +96,74 @@ public class HaoUtility {
         return matcher.replaceAll("$1").trim();
     }
 
-    public enum JSON_TYPE{
-        /**JSONObject*/
+    public enum JSON_TYPE {
+        /**
+         * JSONObject
+         */
         JSON_TYPE_OBJECT,
-        /**JSONArray*/
+        /**
+         * JSONArray
+         */
         JSON_TYPE_ARRAY,
-        /**不是JSON格式的字符串*/
+        /**
+         * 不是JSON格式的字符串
+         */
         JSON_TYPE_ERROR
     }
+
     /***
-     *
      * 获取JSON类型
-     *         判断规则
-     *             判断第一个字母是否为{或[ 如果都不是则不是一个JSON格式的文本
+     * 判断规则
+     * 判断第一个字母是否为{或[ 如果都不是则不是一个JSON格式的文本
      *
      * @param str
      * @return
      */
-    public static JSON_TYPE getJSONType(String str){
-        if(TextUtils.isEmpty(str)){
+    public static JSON_TYPE getJSONType(String str) {
+        if (TextUtils.isEmpty(str)) {
             return JSON_TYPE.JSON_TYPE_ERROR;
         }
 
         final char[] strChar = str.substring(0, 1).toCharArray();
         final char firstChar = strChar[0];
 
-        if(firstChar == '{'){
+        if (firstChar == '{') {
             return JSON_TYPE.JSON_TYPE_OBJECT;
-        }else if(firstChar == '['){
+        } else if (firstChar == '[') {
             return JSON_TYPE.JSON_TYPE_ARRAY;
-        }else{
+        } else {
             return JSON_TYPE.JSON_TYPE_ERROR;
         }
     }
 
-    public static void print(String str)
-    {
+    public static void print(String str) {
         Log.d("TTLog", str);
     }
 
     /**
      * 取得当前类所在的文件
+     *
      * @param clazz
      * @return
      */
-    public static File getClassFile(Class clazz){
-        URL path = clazz.getResource(clazz.getName().substring(clazz.getName().lastIndexOf("")+1)+".classs");
-        if(path == null){
+    public static File getClassFile(Class clazz) {
+        URL path = clazz.getResource(clazz.getName().substring(clazz.getName().lastIndexOf("") + 1) + ".classs");
+        if (path == null) {
             String name = clazz.getName().replaceAll("[.]", "/");
-            path = clazz.getResource("/"+name+".class");
+            path = clazz.getResource("/" + name + ".class");
         }
         return new File(path.getFile());
     }
+
     /**
      * 得到当前类的路径
-     * @param clazz
+     *
      * @return
      */
-    public static String getClassFilePath(){
-        try{
-            return java.net.URLDecoder.decode(getClassFile(HaoUtility.class).getAbsolutePath(),"UTF-8");
-        }catch (Exception e) {
+    public static String getClassFilePath() {
+        try {
+            return java.net.URLDecoder.decode(getClassFile(HaoUtility.class).getAbsolutePath(), "UTF-8");
+        } catch (Exception e) {
             // TODO: handle exception
             e.printStackTrace();
             HaoUtility.print(e + "");
@@ -166,49 +173,46 @@ public class HaoUtility {
 
     /**
      * 取得当前类所在的ClassPath目录，比如tomcat下的classes路径
+     *
      * @param clazz
      * @return
      */
-    public static File getClassPathFile(Class clazz){
+    public static File getClassPathFile(Class clazz) {
         File file = getClassFile(clazz);
-        for(int i=0,count = clazz.getName().split("[.]").length; i<count; i++)
+        for (int i = 0, count = clazz.getName().split("[.]").length; i < count; i++)
             file = file.getParentFile();
-        if(file.getName().toUpperCase().endsWith(".JAR!")){
+        if (file.getName().toUpperCase().endsWith(".JAR!")) {
             file = file.getParentFile();
         }
         return file;
     }
+
     /**
      * 取得当前类所在的ClassPath路径
+     *
      * @param clazz
      * @return
      */
-    public static String getClassPath(Class clazz){
-        try{
-            return java.net.URLDecoder.decode(getClassPathFile(clazz).getAbsolutePath(),"UTF-8");
-        }catch (Exception e) {
+    public static String getClassPath(Class clazz) {
+        try {
+            return java.net.URLDecoder.decode(getClassPathFile(clazz).getAbsolutePath(), "UTF-8");
+        } catch (Exception e) {
             // TODO: handle exception
             e.printStackTrace();
             return "";
         }
     }
 
-
-
-
-    public static ArrayList<String> getKeyIndexArray(Object target)
-    {
+    public static ArrayList<String> getKeyIndexArray(Object target) {
         ArrayList<String> keyList = new ArrayList<>();
         if (target instanceof JsonArray) {
-            for (int key = 0; key < ((JsonArray) target).size(); key++)
-            {
+            for (int key = 0; key < ((JsonArray) target).size(); key++) {
                 keyList.add(key + "");
                 Object objc = ((JsonArray) target).get(key);
-                if (objc instanceof JsonObject || objc instanceof JsonArray)
-                {
+                if (objc instanceof JsonObject || objc instanceof JsonArray) {
                     ArrayList<String> keyListTemp = getKeyIndexArray(objc);
-                    for (String keyTemp:
-                         keyListTemp) {
+                    for (String keyTemp :
+                            keyListTemp) {
                         keyList.add(key + ">" + keyTemp);
                     }
                 }
@@ -244,4 +248,31 @@ public class HaoUtility {
         return matcher.replaceAll("$1").trim();
     }
 
+    public static int compareVersion(String versionOld, String versionNew) {
+        if (versionOld == null || versionNew == null) {
+            return 0;
+        }
+
+        String[] versionOldArray = versionOld.split("[.]");
+        String[] versionNewArray = versionNew.split("[.]");
+
+        int result = 0;
+        int i = 0;
+
+        for (; i < versionOldArray.length && i < versionNewArray.length; i++) {
+            if (versionOldArray[i].compareTo(versionNewArray[i]) > 0) {
+                result = -1;
+                break;
+            } else if (versionOldArray[i].compareTo(versionNewArray[i]) < 0) {
+                result = 1;
+                break;
+            }
+        }
+
+        if (result == 0 && versionOldArray.length != versionNewArray.length) {
+            result = versionOldArray.length < versionNewArray.length ? 1 : -1;
+        }
+
+        return result;
+    }
 }
