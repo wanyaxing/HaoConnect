@@ -11,7 +11,7 @@
 #import "HaoUtility.h"
 @implementation HaoHttpClient
 
-+ (void)loadContent:(NSString *)actionUrl
++(MKNetworkOperation *)loadContent:(NSString *)actionUrl
             params:(NSMutableDictionary *)params
             method:(NSString *)method
            headers:(NSDictionary *)headers
@@ -30,16 +30,17 @@
     }];
     [engine enqueueOperation:op];
 
+    return op;
 
 }
-+ (void)loadJson:(NSString *)actionUrl
++ (MKNetworkOperation *)loadJson:(NSString *)actionUrl
         params:(NSMutableDictionary *)params
         Method:(NSString *)method
        headers:(NSDictionary *)headers
   onCompletion:(void (^)(NSDictionary *responseData))completionBlock
        onError:(MKNKErrorBlock)errorBlock
 {
-    [self loadContent:actionUrl params:params method:method headers:headers onCompletion:^(NSData *responseData) {
+  MKNetworkOperation * op =[self loadContent:actionUrl params:params method:method headers:headers onCompletion:^(NSData *responseData) {
     NSError *err             = nil;
         NSDictionary * jsonDic=[NSJSONSerialization JSONObjectWithData:responseData options:NSJSONReadingAllowFragments error:&err];
     NSLog(@"jsonDic          = %@", jsonDic);
@@ -49,6 +50,8 @@
     } onError:^(NSError *error) {
         errorBlock(error);
     }];
+    
+    return op;
 }
 
 //上传图片
@@ -68,10 +71,6 @@
                                             httpMethod:method];
     [op addData:imgData forKey:@"file" mimeType:@"image/jpeg" fileName:[NSString stringWithFormat:@"%.0f.jpg",[[NSDate date] timeIntervalSince1970]]];
 
-
-
-    // setFreezable uploads your images after connection is restored!
-
     [op setFreezable:YES];
 
 
@@ -90,6 +89,15 @@
 
     return op;
 
+}
+
++(void)testUpload{
+    
+    
+    MKNetworkOperation * op = nil;
+    [op onUploadProgressChanged:^(double progress) {
+        NSLog(@"---%.0f",progress*100);
+    }];
 }
 
 + (void)canelRequest:(NSString *)urlParam{

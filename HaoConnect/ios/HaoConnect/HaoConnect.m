@@ -138,7 +138,7 @@ static NSString * Checkcode   = @""; //Userid和Logintime组合加密后的产�
     return headerDictionary;
 }
 
-+ (void)loadContent:(NSString *)urlParam
++ (MKNetworkOperation *)loadContent:(NSString *)urlParam
             params:(NSMutableDictionary *)params
             method:(NSString *)method
       onCompletion:(void (^)(NSData *responseData))completionBlock
@@ -148,22 +148,23 @@ static NSString * Checkcode   = @""; //Userid和Logintime组合加密后的产�
 
     NSDictionary * headers=[self getSecretHeaders:params urlPrame:urlParam];
     NSString * hostName=[NSString stringWithFormat:@"%@/%@",HAOCONNECT_APIHOST,urlParam];
-    [HaoHttpClient loadContent:hostName params:params method:method headers:headers onCompletion:^(NSData *responseData) {
+    MKNetworkOperation * op = [HaoHttpClient loadContent:hostName params:params method:method headers:headers onCompletion:^(NSData *responseData) {
         completionBlock(responseData);
     } onError:^(NSError *error) {
         errorBlock(error);
     }];
 
+    return op;
 }
 
-+ (void)request:(NSString *)urlParam
++ (MKNetworkOperation *)request:(NSString *)urlParam
         params:(NSMutableDictionary *)params
     httpMethod:(NSString *)method
-  onCompletion:(void (^)(HaoResult *responseDic))completionBlock
-       onError:(void (^)(HaoResult *error))errorBlock
+  onCompletion:(void (^)(HaoResult *result))completionBlock
+       onError:(void (^)(HaoResult *errorResult))errorBlock
 {
 
-    [self loadContent:urlParam params:params method:method onCompletion:^(NSData *responseData) {
+    MKNetworkOperation * op = [self loadContent:urlParam params:params method:method onCompletion:^(NSData *responseData) {
         @try {
     NSError *err                          = nil;
             NSDictionary * jsonDic=[NSJSONSerialization JSONObjectWithData:responseData options:NSJSONReadingAllowFragments error:&err];
@@ -191,15 +192,16 @@ static NSString * Checkcode   = @""; //Userid和Logintime组合加密后的产�
         errorBlock(errorResult);
     }];
 
+    return op;
 }
 
-+ (void)loadJson:(NSString *)urlParam
++ (MKNetworkOperation *)loadJson:(NSString *)urlParam
          params:(NSMutableDictionary *)params
          Method:(NSString *)method
    onCompletion:(void (^)(NSDictionary *responseData))completionBlock
         onError:(MKNKErrorBlock)errorBlock
 {
-    [self loadContent:urlParam params:params method:method onCompletion:^(NSData *responseData) {
+    MKNetworkOperation * op = [self loadContent:urlParam params:params method:method onCompletion:^(NSData *responseData) {
         @try {
     NSError *err                          = nil;
             NSDictionary * jsonDic=[NSJSONSerialization JSONObjectWithData:responseData options:NSJSONReadingAllowFragments error:&err];
@@ -217,18 +219,19 @@ static NSString * Checkcode   = @""; //Userid和Logintime组合加密后的产�
         errorBlock(error);
     }];
 
+    return op;
 }
 
-+ (void)upLoadImage:(NSString *)urlParam
++ (MKNetworkOperation *)upLoadImage:(NSString *)urlParam
             params:(NSMutableDictionary *)params
            imgData:(NSData *)imgData
             Method:(NSString *)method
-      onCompletion:(void (^)(HaoResult *responseDic))completionBlock
-           onError:(void (^)(HaoResult *error))errorBlock{
+      onCompletion:(void (^)(HaoResult *result))completionBlock
+           onError:(void (^)(HaoResult *errorResult))errorBlock{
     NSDictionary * headers=[self getSecretHeaders:params urlPrame:nil];
 //    NSString * hostName=[NSString stringWithFormat:@"%@/%@",HAOCONNECT_APIHOST,urlParam];
 
-    [HaoHttpClient uploadImage:urlParam params:params imageDatas:imgData Method:method headers:headers onCompletion:^(NSData *responseData) {
+    MKNetworkOperation * op = [HaoHttpClient uploadImage:urlParam params:params imageDatas:imgData Method:method headers:headers onCompletion:^(NSData *responseData) {
         @try {
     NSError *err                          = nil;
             NSDictionary * jsonDic=[NSJSONSerialization JSONObjectWithData:responseData options:NSJSONReadingAllowFragments error:&err];
@@ -256,6 +259,7 @@ static NSString * Checkcode   = @""; //Userid和Logintime组合加密后的产�
         HaoResult * errorResult=[HaoResult instanceModel:nil errorCode:-1 errorStr:@"JSON解析失败" extraInfo:nil];
         errorBlock(errorResult);
     }];
+    return op;
 
 }
 + (void)canelRequest:(NSString *)urlParam{

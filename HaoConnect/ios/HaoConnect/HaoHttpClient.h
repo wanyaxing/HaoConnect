@@ -12,21 +12,21 @@
 @interface HaoHttpClient : NSObject
 typedef void (^ResponseDataBlock)(id);
 
-+ (void)loadContent:(NSString *)actionUrl
++ (MKNetworkOperation *)loadContent:(NSString *)actionUrl
             params:(NSMutableDictionary *)params
             method:(NSString *)method
            headers:(NSDictionary *)headers
       onCompletion:(void (^)(NSData *responseData))completionBlock
            onError:(MKNKErrorBlock)errorBlock;
 
-+ (void)loadJson:(NSString *)actionUrl
++ (MKNetworkOperation *)loadJson:(NSString *)actionUrl
          params:(NSMutableDictionary *)params
          Method:(NSString *)method
         headers:(NSDictionary *)headers
    onCompletion:(void (^)(NSDictionary *responseData))completionBlock
         onError:(MKNKErrorBlock)errorBlock;
 
-+ (MKNetworkOperation*) uploadImage:(NSString *)actionUrl
++ (MKNetworkOperation *) uploadImage:(NSString *)actionUrl
                             params:(NSMutableDictionary *)params
                         imageDatas:(NSData *)imgData
                             Method:(NSString *)method

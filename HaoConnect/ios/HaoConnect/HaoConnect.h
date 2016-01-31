@@ -22,30 +22,30 @@ extern const NSString * Requesttime;
 
 + (NSMutableDictionary * )getSecretHeaders:(NSDictionary *)paramDic urlPrame:(NSString *)urlParam;
 
-+ (void)loadContent:(NSString *)urlParam
++ (MKNetworkOperation *)loadContent:(NSString *)urlParam
             params:(NSMutableDictionary *)params
             method:(NSString *)method
       onCompletion:(void (^)(NSData *responseData))completionBlock
            onError:(MKNKErrorBlock)errorBlock;
 
-+ (void)request:(NSString *)urlParam
++ (MKNetworkOperation *)request:(NSString *)urlParam
         params:(NSMutableDictionary *)params
     httpMethod:(NSString *)method
-  onCompletion:(void (^)(HaoResult *responseDic))completionBlock
-       onError:(void (^)(HaoResult *error))errorBlock;
+  onCompletion:(void (^)(HaoResult *result))completionBlock
+       onError:(void (^)(HaoResult *errorResult))errorBlock;
 
-+ (void)loadJson:(NSString *)urlParam
++ (MKNetworkOperation *)loadJson:(NSString *)urlParam
          params:(NSMutableDictionary *)params
          Method:(NSString *)method
    onCompletion:(void (^)(NSDictionary *responseData))completionBlock
         onError:(MKNKErrorBlock)errorBlock;
 
-+ (void)upLoadImage:(NSString *)urlParam
++ (MKNetworkOperation *)upLoadImage:(NSString *)urlParam
             params:(NSMutableDictionary *)params
            imgData:(NSData *)imgData
             Method:(NSString *)method
-      onCompletion:(void (^)(HaoResult *responseDic))completionBlock
-           onError:(void (^)(HaoResult *error))errorBlock;//上传图片
+      onCompletion:(void (^)(HaoResult *result))completionBlock
+           onError:(void (^)(HaoResult *errorResult))errorBlock;//上传图片
 
 + (void)canelRequest:(NSString *)urlParam;//取消某个请求
 + (void)canelAllRequest;//取消所有的请求

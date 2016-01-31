@@ -77,7 +77,7 @@ typedef enum {
   BOOL _freezable;
   MKNKPostDataEncodingType _postDataEncoding;
 }
-
+@property (nonatomic, strong)NSString * bundleStr;
 /*!
  *  @abstract Request URL Property
  *  @property url
