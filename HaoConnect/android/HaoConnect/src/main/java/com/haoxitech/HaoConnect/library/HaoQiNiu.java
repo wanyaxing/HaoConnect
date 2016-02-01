@@ -212,7 +212,6 @@ public class HaoQiNiu {
             @Override
             public void onProgress(long bytesWritten, long totalSize) {
                 super.onProgress(bytesWritten, totalSize);
-
                 response.onProgress((long) (0.2 * bytesWritten / totalSize * fileLength), fileLength);
             }
 
