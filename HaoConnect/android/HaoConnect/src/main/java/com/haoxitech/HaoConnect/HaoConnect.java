@@ -91,6 +91,10 @@ public class HaoConnect {
         putString("checkCode", Checkcode);
     }
 
+    public static String getUserid() {
+        return Userid;
+    }
+
     /**
      * 推送token
      *
@@ -125,7 +129,9 @@ public class HaoConnect {
 
         Map<String, Object> signMap = new HashMap<>();
         signMap.putAll(headers);
-        signMap.putAll(requestData);
+        if (requestData != null) {
+            signMap.putAll(requestData);
+        }
         Map<String, Object> linkMap = new HashMap<String, Object>();
         linkMap.put("link", HaoUtility.httpStringFilter("http://" + ApiHost + "/" + urlParam));
         signMap.putAll(linkMap);
