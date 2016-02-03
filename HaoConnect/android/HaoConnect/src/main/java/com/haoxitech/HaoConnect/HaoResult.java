@@ -133,6 +133,7 @@ public class HaoResult {
             if (((JsonObject) value).get("modelType") != null) {
                 return HaoResult.instanceModel(value.getAsJsonObject(), this.errorCode, this.errorStr, this.extraInfo);
             }
+            return value;
         } else if (value instanceof JsonArray) {
             ArrayList<Object> array = new ArrayList<>();
             for (int i = 0; i < ((JsonArray) value).size(); i++) {
@@ -141,7 +142,8 @@ public class HaoResult {
             }
             return array;
         }
-        return value;
+
+        return value.getAsString();
     }
 
     /**
@@ -161,8 +163,8 @@ public class HaoResult {
 
     public String findAsString(String path) {
         try {
-            JsonElement result = (JsonElement) find(path);
-            return result.getAsString();
+//            JsonElement result = (JsonElement) find(path);
+            return find(path).toString();
         } catch (Exception e) {
         }
         return "";
