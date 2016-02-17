@@ -64,7 +64,7 @@ static NSMutableDictionary * operationDics;
 }
 
 +(NSMutableArray *)upLoadAllPictures:(NSMutableArray *)imageDataArray
-            onCompletion:(void (^)(NSDictionary *responseData,NSInteger index))completionBlock
+            onCompletion:(void (^)(NSString *urlPreview,NSInteger index))completionBlock
                  onError:(void (^)(NSError * error,NSInteger index))errorBlock
                 progress:(void (^)(double progress,NSInteger index))progressBlock
 
@@ -74,8 +74,8 @@ static NSMutableDictionary * operationDics;
     NSMutableArray * arrayOperaions = [[NSMutableArray alloc] init];
     NSInteger i=0;
     for (NSData * imgData in imageDataArray) {
-       MKNetworkOperation * op  = [self requestUpLoadQiNiu:imgData onCompletion:^(NSDictionary *responseData) {
-            completionBlock(responseData,i);
+       MKNetworkOperation * op  = [self requestUpLoadQiNiu:imgData onCompletion:^(NSString *urlPreview) {
+            completionBlock(urlPreview,i);
         } onError:^(NSError *error) {
             errorBlock(error,i);
             
@@ -93,7 +93,7 @@ static NSMutableDictionary * operationDics;
 
 
 +(MKNetworkOperation *)requestUpLoadQiNiu:(NSData *)imageData
-                             onCompletion:(void (^)(NSDictionary *responseData))completionBlock
+                             onCompletion:(void (^)(NSString *urlPreview))completionBlock
                                   onError:(MKNKErrorBlock)errorBlock
                                  progress:(void (^)(double progress))progressBlock
 
@@ -119,7 +119,8 @@ static NSMutableDictionary * operationDics;
             if (!isFileExistInQiniu) {
                 NSString * token=[[responseData objectForKey:@"results"] objectForKey:@"uploadToken"];
                MKNetworkOperation * upLoadOp = [self requestRealUploadImagToken:token imageDatas:imageData onCompletion:^(NSDictionary *responseData) {
-                   completionBlock(responseData);
+                   NSString * picUrl=[NSString stringWithFormat:@"%@",[responseData objectForKey:@"urlPreview"]];
+                   completionBlock(picUrl);
                } onError:^(NSError *error) {
                    errorBlock(error);
                } progress:^(double progress) {
@@ -127,12 +128,13 @@ static NSMutableDictionary * operationDics;
                }];
                 [self setCommonParam:bundleStr value:upLoadOp];
             }else{
-                completionBlock(responseData);
+                NSString * picUrl=[[responseData objectForKey:@"results"] objectForKey:@"urlPreview"];
+                completionBlock(picUrl);
                 progressBlock(1.0);
             }
             
         }
-       completionBlock(responseData);
+       completionBlock(nil);
 
     } onError:^(NSError *error) {
         errorBlock(error);

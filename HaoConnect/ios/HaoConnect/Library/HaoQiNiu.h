@@ -14,11 +14,11 @@
 +(void) setCommonParam:(id)key value:(id)value;
 +(id) commonParam:(id) key;
 +(NSMutableArray *)upLoadAllPictures:(NSMutableArray *)imageDataArray
-                        onCompletion:(void (^)(NSDictionary *responseData,NSInteger index))completionBlock
+                        onCompletion:(void (^)(NSString *urlPreview,NSInteger index))completionBlock
                              onError:(void (^)(NSError * error,NSInteger index))errorBlock
                             progress:(void (^)(double progress,NSInteger index))progressBlock;
 +(MKNetworkOperation *)requestUpLoadQiNiu:(NSData *)imageData
-                             onCompletion:(void (^)(NSDictionary *responseData))completionBlock
+                             onCompletion:(void (^)(NSString *urlPreview))completionBlock
                                   onError:(MKNKErrorBlock)errorBlock
                                  progress:(void (^)(double progress))progressBlock;
 @end
