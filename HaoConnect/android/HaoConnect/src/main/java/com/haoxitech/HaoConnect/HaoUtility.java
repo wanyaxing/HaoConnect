@@ -140,16 +140,6 @@ public class HaoUtility {
         Log.d("TTLog", str);
     }
 
-    public static void printMap(Map<String, Object> map) {
-        for (String key : map.keySet()) {
-            Log.d("TTLog", "key ===> " + key + "  ===>" + map.get(key));
-        }
-    }
-
-    public static void V(String str){
-        Log.v("GWJ=====>",str);
-    }
-
     /**
      * 取得当前类所在的文件
      *
