@@ -200,7 +200,6 @@ public class HaoResult {
             for (int i = 0; i < resultsIndex.size(); i++) {
                 tempIndex.append(resultsIndex.get(i) + "\n");
             }
-            HaoUtility.print(tempIndex.toString());
             this.searchIndexString = tempIndex.toString();
         }
 
