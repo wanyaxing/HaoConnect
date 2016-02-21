@@ -22,12 +22,15 @@ public abstract class HaoResultHttpResponseHandler extends TextHttpResponseHandl
 
     @Override
     public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
+        HaoUtility.print("headers===>" + headers);
         HaoResult haoResult = (HaoResult) HaoResult.instanceModel(null, -1, responseString, null);
         onFail(haoResult);
     }
 
     @Override
     public final void onSuccess(int statusCode, Header[] headers, String responseString) {
+
+        HaoUtility.print("headers===>" + headers);
         try {
             Gson gson = new Gson();
             JsonObject jsonObject = gson.fromJson(responseString, JsonObject.class);
