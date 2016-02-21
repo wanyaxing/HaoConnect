@@ -136,6 +136,7 @@ public class HaoConnect {
         linkMap.put("link", HaoUtility.httpStringFilter("http://" + ApiHost + "/" + urlParam));
         signMap.putAll(linkMap);
         headers.put("Signature", getSignature(signMap));
+
         return headers;
     }
 

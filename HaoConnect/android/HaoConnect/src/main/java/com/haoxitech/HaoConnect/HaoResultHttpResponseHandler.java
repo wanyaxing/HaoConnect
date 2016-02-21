@@ -28,6 +28,7 @@ public abstract class HaoResultHttpResponseHandler extends TextHttpResponseHandl
 
     @Override
     public final void onSuccess(int statusCode, Header[] headers, String responseString) {
+
         try {
             Gson gson = new Gson();
             JsonObject jsonObject = gson.fromJson(responseString, JsonObject.class);
