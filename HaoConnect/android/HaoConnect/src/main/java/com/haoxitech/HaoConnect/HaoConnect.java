@@ -165,8 +165,7 @@ public class HaoConnect {
             return null;
         }
         RequestParams requestParams = new RequestParams();
-        if (params != null)
-        {
+        if (params != null) {
             for (Map.Entry<String, Object> entry : params.entrySet()) {
                 requestParams.put(entry.getKey(), entry.getValue() + "");
             }
@@ -203,11 +202,9 @@ public class HaoConnect {
         try {
             SharedPreferences sharedPreferences = Ctx.getSharedPreferences("config",
                     0);
-            return sharedPreferences.getString(key, null);
+            return sharedPreferences.getString(key, "");
         } catch (Exception e) {
             return "";
         }
     }
-
-
 }

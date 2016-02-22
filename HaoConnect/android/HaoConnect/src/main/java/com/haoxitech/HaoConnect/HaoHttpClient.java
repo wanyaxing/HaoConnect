@@ -44,14 +44,23 @@ public class HaoHttpClient {
 
     public static RequestHandle loadContent(String actionUrl, RequestParams params, String Method, Map<String, Object> headers, AsyncHttpResponseHandler response, Context context) {
 
-        RequestHeader[] headersArray = new RequestHeader[headers.entrySet().size()];
+        RequestHeader[] headersArray = new RequestHeader[0];
+        try {
+            headersArray = new RequestHeader[headers.entrySet().size()];
 
-        int i = 0;
-        for (Map.Entry<String, Object> header : headers.entrySet()) {
-            headersArray[i] = new HaoHttpClient().new RequestHeader();
-            headersArray[i].setName(header.getKey());
-            headersArray[i].setValue(header.getValue().toString());
-            i++;
+            int i = 0;
+            for (Map.Entry<String, Object> header : headers.entrySet()) {
+                headersArray[i] = new HaoHttpClient().new RequestHeader();
+                headersArray[i].setName(header.getKey());
+                if (header.getValue() == null) {
+                    headersArray[i].setValue("");
+                } else {
+                    headersArray[i].setValue("" + header.getValue());
+                }
+                i++;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         if (Method == null || Method.equals("get")) {
