@@ -121,11 +121,14 @@ public class HaoResult {
                 }
             }
 
-            Object value = value(changeValue);
-            pathCache.put(path, value);
-            return value;
+            if (changeValue.isJsonNull() || changeValue == null || changeValue.equals("null")) {
+                return "";
+            } else {
+                Object value = value(changeValue);
+                pathCache.put(path, value);
+                return value;
+            }
         }
-
     }
 
     public Object value(JsonElement value) {
@@ -133,7 +136,10 @@ public class HaoResult {
             if (((JsonObject) value).get("modelType") != null) {
                 return HaoResult.instanceModel(value.getAsJsonObject(), this.errorCode, this.errorStr, this.extraInfo);
             }
-            return value;
+            if (value != null)
+                return value;
+            else
+                return "";
         } else if (value instanceof JsonArray) {
             ArrayList<Object> array = new ArrayList<>();
             for (int i = 0; i < ((JsonArray) value).size(); i++) {
@@ -143,7 +149,10 @@ public class HaoResult {
             return array;
         }
 
-        return value.getAsString();
+        if (value != null)
+            return value.getAsString();
+        else
+            return "";
     }
 
     /**
@@ -166,6 +175,7 @@ public class HaoResult {
 //            JsonElement result = (JsonElement) find(path);
             return find(path).toString();
         } catch (Exception e) {
+
         }
         return "";
     }
