@@ -205,6 +205,7 @@ public class HaoConnect {
                     0);
             return sharedPreferences.getString(key, "");
         } catch (Exception e) {
+            Log.e("getStringInfo", e.getMessage());
             return "";
         }
     }
