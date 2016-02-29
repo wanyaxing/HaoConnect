@@ -5,9 +5,25 @@ package com.haoxitech.HaoConnect;
  */
 public class HaoConfig_example {
 
-    public static String HAOCONNECT_CLIENTINFO      = "???";
-    public static String HAOCONNECT_CLIENTVERSION   = "1.0";
-    public static String HAOCONNECT_SECRET_HAX      = "secret=???";
-    public static String HAOCONNECT_APIHOST         = "???.???.com";
+    private static String Clientversion = "";
 
+    public static String getClientInfo() {
+        return "???";
+    }
+
+    public static void setClientVersion(String clientVersion) {
+        Clientversion = clientVersion;
+    }
+
+    public static String getClientVersion() {
+        return Clientversion;
+    }
+
+    public static String getSecretHax() {
+        return "secret=???";
+    }
+
+    public static String getApiHost() {
+        return "api.???.com";
+    }
 }

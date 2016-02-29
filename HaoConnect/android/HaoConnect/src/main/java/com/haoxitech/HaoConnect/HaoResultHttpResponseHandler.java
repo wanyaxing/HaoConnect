@@ -42,6 +42,7 @@ public abstract class HaoResultHttpResponseHandler extends TextHttpResponseHandl
         } catch (Exception e) {
             HaoResult haoResult = (HaoResult) HaoResult.instanceModel(null, -1, e.toString(), null);
             onFail(haoResult);
+            HaoUtility.print("responseString---->" + responseString);
         }
     }
 
