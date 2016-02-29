@@ -60,10 +60,11 @@ public class HaoConnect {
      */
     public static void init(Context context) {
         if (Clientinfo == null || Clientinfo.length() == 0) {
+
+            Ctx = context;
             Clientinfo = HaoConfig.HAOCONNECT_CLIENTINFO;
             SECRET_HAX_CONNECT = HaoConfig.HAOCONNECT_SECRET_HAX;
             ApiHost = HaoConfig.HAOCONNECT_APIHOST;
-            Ctx = context;
         }
     }
 
