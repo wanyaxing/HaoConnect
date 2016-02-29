@@ -10,10 +10,10 @@
 #import "HaoUtility.h"
 #import "HaoHttpClient.h"
 
-const NSString * Isdebug      = @"0"; //是否打印调试信息
-const NSString * Devicetype   = @"4"; //设备类型 1：浏览器设备 2：pc设备 3：Android设备 4：ios设备 5：windows phone设备
-const NSString * Requesttime  = @""; //请求时的时间戳，单位：秒
-const NSString * Signature    = @""; //接口加密校验
+static NSString * Isdebug      = @"0"; //是否打印调试信息
+static NSString * Devicetype   = @"4"; //设备类型 1：浏览器设备 2：pc设备 3：Android设备 4：ios设备 5：windows phone设备
+static NSString * Requesttime  = @""; //请求时的时间戳，单位：秒
+static NSString * Signature    = @""; //接口加密校验
 
 static NSString * Devicetoken = @""; //推送用的设备token
 static NSString * Userid      = @""; //当前用户ID，登录后可获得。
@@ -33,6 +33,11 @@ static NSString * Checkcode   = @""; //Userid和Logintime组合加密后的产�
 @implementation HaoConnect
 
 
++(void)setIsDebug:(BOOL)isdebug{
+
+    Isdebug = [NSString stringWithFormat:@"%d",isdebug];
+}
+
 + (void)setCurrentUserInfo:(NSString *)userid :(NSString *)loginTime :(NSString *)checkCode{
     
     Userid = userid;
@@ -50,13 +55,13 @@ static NSString * Checkcode   = @""; //Userid和Logintime组合加密后的产�
     [[NSUserDefaults standardUserDefaults] setObject:deviceToken forKey:@"deviceToken"];
 
 }
-
 //头信息赋值
 + (NSMutableDictionary *)getCommonHeaderInfo{
+    
+    
 
     NSMutableDictionary * commonParams=[[NSMutableDictionary alloc] init];
     Requesttime                           = [NSString stringWithFormat:@"%.0f",[[NSDate date] timeIntervalSince1970]];
-    NSString * version                    = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"];
 
     if (Devicetoken.length == 0) {
     Devicetoken                           = [[NSUserDefaults standardUserDefaults] objectForKey:@"deviceToken"];
@@ -72,8 +77,8 @@ static NSString * Checkcode   = @""; //Userid和Logintime组合加密后的产�
     }
 
 
-    [commonParams setObject:  HAOCONNECT_CLIENTINFO     forKey:  @"Clientinfo"];
-    [commonParams setObject:  version                   forKey:  @"Clientversion" ];
+    [commonParams setObject:  [HaoConfig getClientInfo]     forKey:  @"Clientinfo"];
+    [commonParams setObject:  [HaoConfig getClientVersion]  forKey:  @"Clientversion" ];
     [commonParams setObject:  Isdebug                   forKey:  @"Isdebug"];
     [commonParams setObject:  Devicetype                forKey:  @"Devicetype"];
 //    [commonParams setObject:  Requesttime               forKey:  @"Requesttime"];
@@ -122,9 +127,9 @@ static NSString * Checkcode   = @""; //Userid和Logintime组合加密后的产�
     for (NSString * key in [paramDic allKeys]) {
         [array addObject:[NSString stringWithFormat:@"%@=%@",key,[paramDic objectForKey:key]]];
     }
-    [array addObject:[NSString stringWithFormat:@"link=%@/%@",HAOCONNECT_APIHOST,urlParam]];
+    [array addObject:[NSString stringWithFormat:@"link=%@/%@",[HaoConfig getApiHost],urlParam]];
 
-    [array addObject:[NSString stringWithFormat:@"%@",HAOCONNECT_SECRET_HAX]];
+    [array addObject:[NSString stringWithFormat:@"%@",[HaoConfig getSecretHax]]];
 
     NSArray *resultArray                  = [array sortedArrayUsingSelector:@selector(compare:)];
     NSMutableString *secretString         = [NSMutableString string];
@@ -147,7 +152,7 @@ static NSString * Checkcode   = @""; //Userid和Logintime组合加密后的产�
 {
 
     NSDictionary * headers=[self getSecretHeaders:params urlPrame:urlParam];
-    NSString * hostName=[NSString stringWithFormat:@"%@/%@",HAOCONNECT_APIHOST,urlParam];
+    NSString * hostName=[NSString stringWithFormat:@"%@/%@",[HaoConfig getApiHost],urlParam];
     MKNetworkOperation * op = [HaoHttpClient loadContent:hostName params:params method:method headers:headers onCompletion:^(NSData *responseData) {
         completionBlock(responseData);
     } onError:^(NSError *error) {
@@ -170,16 +175,24 @@ static NSString * Checkcode   = @""; //Userid和Logintime组合加密后的产�
             NSDictionary * jsonDic=[NSJSONSerialization JSONObjectWithData:responseData options:NSJSONReadingAllowFragments error:&err];
     NSLog(@"jsonDic                       = %@", jsonDic);
             HaoResult * resultData=[HaoResult instanceModel:[jsonDic objectForKey:@"results"] errorCode:[[jsonDic objectForKey:@"errorCode"] integerValue] errorStr:[jsonDic objectForKey:@"errorStr"] extraInfo:[jsonDic objectForKey:@"extraInfo"]];
+            
+            
             if ([resultData isResultsOK]) {
                 completionBlock(resultData);
             }else{
+                UIAlertView * alertView = [[UIAlertView alloc] initWithTitle:@"温馨提示" message:resultData.errorStr delegate:nil cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+                [alertView show];
                 NSLog(@"errorCode==%@",[jsonDic objectForKey:@"errorStr"]);
                 errorBlock(resultData);
             }
 
         }
         @catch (NSException *exception) {
+            NSLog(@"responseData=%@",[[NSString alloc] initWithData:responseData encoding:NSUTF8StringEncoding]);
             HaoResult * errorResult=[HaoResult instanceModel:nil errorCode:-1 errorStr:@"JSON解析失败" extraInfo:nil];
+            UIAlertView * alertView = [[UIAlertView alloc] initWithTitle:@"温馨提示" message:errorResult.errorStr delegate:nil cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+            [alertView show];
+
             errorBlock(errorResult);
 
         }
@@ -188,7 +201,10 @@ static NSString * Checkcode   = @""; //Userid和Logintime组合加密后的产�
         }
 
     } onError:^(NSError *error) {
-        HaoResult * errorResult=[HaoResult instanceModel:nil errorCode:-1 errorStr:@"JSON解析失败" extraInfo:nil];
+        NSLog(@"error=%@",error);
+        HaoResult * errorResult=[HaoResult instanceModel:nil errorCode:-1 errorStr:@"网络请求失败" extraInfo:nil];
+        UIAlertView * alertView = [[UIAlertView alloc] initWithTitle:@"温馨提示" message:errorResult.errorStr delegate:nil cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+        [alertView show];
         errorBlock(errorResult);
     }];
 
@@ -229,7 +245,6 @@ static NSString * Checkcode   = @""; //Userid和Logintime组合加密后的产�
       onCompletion:(void (^)(HaoResult *result))completionBlock
            onError:(void (^)(HaoResult *errorResult))errorBlock{
     NSDictionary * headers=[self getSecretHeaders:params urlPrame:nil];
-//    NSString * hostName=[NSString stringWithFormat:@"%@/%@",HAOCONNECT_APIHOST,urlParam];
 
     MKNetworkOperation * op = [HaoHttpClient uploadImage:urlParam params:params imageDatas:imgData Method:method headers:headers onCompletion:^(NSData *responseData) {
         @try {
@@ -266,6 +281,6 @@ static NSString * Checkcode   = @""; //Userid和Logintime组合加密后的产�
     [HaoHttpClient canelRequest:urlParam];
 }
 + (void)canelAllRequest{
-    [HaoHttpClient canelAllRequest:(NSString *)HAOCONNECT_APIHOST];
+    [HaoHttpClient canelAllRequest:(NSString *)[HaoConfig getApiHost]];
 }
 @end

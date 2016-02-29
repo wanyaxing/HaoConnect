@@ -10,24 +10,22 @@
 
 @implementation HaoConfig
 +(NSString *)getClientInfo{
-
-    return @"zwb-ios";
+    
+    return @"???";
 }
 
 +(NSString *)getSecretHax{
     
-    return @"secret=jhasjkhfjsdfdkfshf";
+    return @"secret=???";
 }
 
 +(NSString *)getApiHost{
     
-    BOOL ceshi   = [[NSUserDefaults standardUserDefaults] boolForKey:@"FFFFFFFF"];
+    return @"api.???.com";
     
-    return ceshi ? @"api.zwaibao.com":@"api-zwaibao.haoxitech.com";
-
 }
 +(NSString *)getClientVersion{
-
+    
     return [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"];
 }
 @end

@@ -12,11 +12,8 @@
 #define METHOD_GET @"GET"
 #define METHOD_POST @"POST"
 
-extern const NSString * Isdebug;
-extern const NSString * Devicetype;
-extern const NSString * Requesttime;
-
 @interface HaoConnect : NSObject
++(void)setIsDebug:(BOOL)isdebug;
 + (void)setCurrentUserInfo:(NSString *)userid :(NSString *)loginTime :(NSString *)checkCode;
 + (void)setCurrentDeviceToken:(NSString *)deviceToken;
 
