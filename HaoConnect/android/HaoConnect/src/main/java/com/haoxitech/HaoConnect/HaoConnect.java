@@ -21,14 +21,14 @@ import java.util.Map;
  */
 public class HaoConnect {
 
-    private static String Clientinfo = "";
-    private static String Clientversion = "0.1";
-    private static String SECRET_HAX_CONNECT = "";
-    private static String ApiHost = "";
+//    private static String Clientinfo = "";
+//    private static String Clientversion = "";
+//    private static String SECRET_HAX_CONNECT = "";
+//    private static String ApiHost = "";
 
     private static String Devicetype = "3";
     private static String Devicetoken = "";
-    private static String Requesttime = "0";
+//    private static String Requesttime = "0";
 
     private static String Userid = "";
     private static String Logintime = "";
@@ -59,19 +59,22 @@ public class HaoConnect {
      * 使用前必须调用该初始化方法
      */
     public static void init(Context context) {
-        if (Clientinfo == null || Clientinfo.length() == 0) {
-            Clientinfo = HaoConfig.HAOCONNECT_CLIENTINFO;
-            SECRET_HAX_CONNECT = HaoConfig.HAOCONNECT_SECRET_HAX;
-            ApiHost = HaoConfig.HAOCONNECT_APIHOST;
-            Ctx = context;
-        }
+        Ctx = context;
     }
 
     /**
-     * 设置版本号
+     * 使用前必须调用该初始化方法
      */
-    public void setClientVersion(String clientVersion) {
-        Clientversion = clientVersion;
+    public static void init(Context context, String version) {
+        init(context);
+        HaoConfig.setClientVersion(version);
+    }
+
+    /**
+     * 设置debug模式
+     */
+    public static void setIsDebug(boolean debug) {
+        Isdebug = debug ? "1" : "0";
     }
 
     /**
@@ -91,6 +94,10 @@ public class HaoConnect {
         putString("checkCode", Checkcode);
     }
 
+    public static String getUserid() {
+        return Userid;
+    }
+
     /**
      * 推送token
      *
@@ -107,12 +114,12 @@ public class HaoConnect {
      */
     public static Map<String, Object> getSecretHeaders(Map<String, Object> requestData, String urlParam) {
         Map<String, Object> headers = new HashMap<>();
-        headers.put("Clientinfo", Clientinfo);
-        headers.put("Clientversion", Clientversion);
+        headers.put("Clientinfo", HaoConfig.getClientInfo());
+        headers.put("Clientversion", HaoConfig.getClientVersion());
         headers.put("Devicetype", Devicetype);
         headers.put("Requesttime", (System.currentTimeMillis() / 1000) + "");
         headers.put("Devicetoken", Devicetoken);
-        headers.put("Isdebug", "0");
+        headers.put("Isdebug", Isdebug);
 
         if (Userid == null || Userid.equals("")) {
             Userid = getString("userID");
@@ -125,11 +132,14 @@ public class HaoConnect {
 
         Map<String, Object> signMap = new HashMap<>();
         signMap.putAll(headers);
-        signMap.putAll(requestData);
+        if (requestData != null) {
+            signMap.putAll(requestData);
+        }
         Map<String, Object> linkMap = new HashMap<String, Object>();
-        linkMap.put("link", HaoUtility.httpStringFilter("http://" + ApiHost + "/" + urlParam));
+        linkMap.put("link", HaoUtility.httpStringFilter("http://" + HaoConfig.getApiHost() + "/" + urlParam));
         signMap.putAll(linkMap);
         headers.put("Signature", getSignature(signMap));
+
         return headers;
     }
 
@@ -143,7 +153,7 @@ public class HaoConnect {
             String data = entry.getKey() + "=" + entry.getValue();
             tmpArr.add(data);
         }
-        tmpArr.add(SECRET_HAX_CONNECT);
+        tmpArr.add(HaoConfig.getSecretHax());
         Collections.sort(tmpArr);
         for (String string : tmpArr) {
             secret += string;
@@ -153,18 +163,17 @@ public class HaoConnect {
 
     public static RequestHandle loadContent(String urlParam, Map<String, Object> params, String method, TextHttpResponseHandler resonpse, Context context) {
 
-        if (Clientinfo == null || Clientinfo.length() == 0) {
+        if (Ctx == null) {
             Toast.makeText(context, "请先初始化HaoConnect,在程序开始的地方调用init()方法", Toast.LENGTH_SHORT).show();
             return null;
         }
         RequestParams requestParams = new RequestParams();
-        if (params != null)
-        {
+        if (params != null) {
             for (Map.Entry<String, Object> entry : params.entrySet()) {
                 requestParams.put(entry.getKey(), entry.getValue() + "");
             }
         }
-        return HaoHttpClient.loadContent("http://" + ApiHost + "/" + urlParam, requestParams, method, getSecretHeaders(params, urlParam), resonpse, context);
+        return HaoHttpClient.loadContent("http://" + HaoConfig.getApiHost() + "/" + urlParam, requestParams, method, getSecretHeaders(params, urlParam), resonpse, context);
     }
 
     public static RequestHandle loadJson(String urlParam, Map<String, Object> params, String method, JsonHttpResponseHandler response, Context context) {
@@ -188,7 +197,7 @@ public class HaoConnect {
             editor.putString(key, value);
             editor.commit();
         } catch (Exception e) {
-            Log.e("putStringInfo", e.getMessage());
+            Log.e("putStringInfo", e + "");
         }
     }
 
@@ -196,11 +205,10 @@ public class HaoConnect {
         try {
             SharedPreferences sharedPreferences = Ctx.getSharedPreferences("config",
                     0);
-            return sharedPreferences.getString(key, null);
+            return sharedPreferences.getString(key, "");
         } catch (Exception e) {
+            Log.e("getStringInfo", e + "");
             return "";
         }
     }
-
-
 }

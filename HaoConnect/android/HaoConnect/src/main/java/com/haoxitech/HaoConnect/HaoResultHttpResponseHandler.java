@@ -28,6 +28,7 @@ public abstract class HaoResultHttpResponseHandler extends TextHttpResponseHandl
 
     @Override
     public final void onSuccess(int statusCode, Header[] headers, String responseString) {
+
         try {
             Gson gson = new Gson();
             JsonObject jsonObject = gson.fromJson(responseString, JsonObject.class);
@@ -41,6 +42,7 @@ public abstract class HaoResultHttpResponseHandler extends TextHttpResponseHandl
         } catch (Exception e) {
             HaoResult haoResult = (HaoResult) HaoResult.instanceModel(null, -1, e.toString(), null);
             onFail(haoResult);
+            HaoUtility.print("responseString---->" + responseString);
         }
     }
 
