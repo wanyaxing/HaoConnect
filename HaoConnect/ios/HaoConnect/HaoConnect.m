@@ -168,47 +168,69 @@ static NSString * Checkcode   = @""; //Userid和Logintime组合加密后的产�
   onCompletion:(void (^)(HaoResult *result))completionBlock
        onError:(void (^)(HaoResult *errorResult))errorBlock
 {
-
-    MKNetworkOperation * op = [self loadContent:urlParam params:params method:method onCompletion:^(NSData *responseData) {
+    
+    MKNetworkOperation *op = [self loadContent:urlParam params:params method:method onCompletion:^(NSData *responseData)
+    {
         @try {
-    NSError *err                          = nil;
-            NSDictionary * jsonDic=[NSJSONSerialization JSONObjectWithData:responseData options:NSJSONReadingAllowFragments error:&err];
-    NSLog(@"jsonDic                       = %@", jsonDic);
-            HaoResult * resultData=[HaoResult instanceModel:[jsonDic objectForKey:@"results"] errorCode:[[jsonDic objectForKey:@"errorCode"] integerValue] errorStr:[jsonDic objectForKey:@"errorStr"] extraInfo:[jsonDic objectForKey:@"extraInfo"]];
+            NSError *err = nil;
+            NSDictionary *jsonDic = [NSJSONSerialization JSONObjectWithData:responseData options:NSJSONReadingAllowFragments error:&err];
+            NSLog(@"jsonDic = %@", jsonDic);
             
+            HaoResult *resultData = [HaoResult instanceModel:[jsonDic objectForKey:@"results"]
+                                                   errorCode:[[jsonDic objectForKey:@"errorCode"] integerValue]
+                                                    errorStr:[jsonDic objectForKey:@"errorStr"]
+                                                   extraInfo:[jsonDic objectForKey:@"extraInfo"]];
             
-            if ([resultData isResultsOK]) {
-                completionBlock(resultData);
-            }else{
-                UIAlertView * alertView = [[UIAlertView alloc] initWithTitle:@"温馨提示" message:resultData.errorStr delegate:nil cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
-                [alertView show];
-                NSLog(@"errorCode==%@",[jsonDic objectForKey:@"errorStr"]);
-                errorBlock(resultData);
+            if ([resultData isResultsOK])
+            {
+                if (completionBlock)
+                {
+                    completionBlock(resultData);
+                }
+                else
+                {
+                    NSLog(@"What are you 弄啥咧!!!!!!!!!!");
+                }
             }
-
+            else
+            {
+                NSLog(@"errorCode==%@",[jsonDic objectForKey:@"errorStr"]);
+                
+                [[self class] errorWithErrorBlock:errorBlock result:resultData];
+            }
         }
-        @catch (NSException *exception) {
+        @catch (NSException *exception)
+        {
             NSLog(@"responseData=%@",[[NSString alloc] initWithData:responseData encoding:NSUTF8StringEncoding]);
-            HaoResult * errorResult=[HaoResult instanceModel:nil errorCode:-1 errorStr:@"JSON解析失败" extraInfo:nil];
-            UIAlertView * alertView = [[UIAlertView alloc] initWithTitle:@"温馨提示" message:errorResult.errorStr delegate:nil cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
-            [alertView show];
-
-            errorBlock(errorResult);
-
+            HaoResult *errorResult = [HaoResult instanceModel:nil errorCode:-1 errorStr:@"JSON解析失败" extraInfo:nil];
+            [[self class] errorWithErrorBlock:errorBlock result:errorResult];
         }
-        @finally {
-
+        @finally
+        {
+            
         }
-
+        
     } onError:^(NSError *error) {
         NSLog(@"error=%@",error);
-        HaoResult * errorResult=[HaoResult instanceModel:nil errorCode:-1 errorStr:@"网络请求失败" extraInfo:nil];
-        UIAlertView * alertView = [[UIAlertView alloc] initWithTitle:@"温馨提示" message:errorResult.errorStr delegate:nil cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
-        [alertView show];
-        errorBlock(errorResult);
+        HaoResult *errorResult = [HaoResult instanceModel:nil errorCode:-1 errorStr:@"网络请求失败" extraInfo:nil];
+        [[self class] errorWithErrorBlock:errorBlock result:errorResult];
     }];
 
     return op;
+}
+
++ (void)errorWithErrorBlock:(void (^)(HaoResult *errorResult))errorBlock
+                     result:(HaoResult *)result
+{
+    if (errorBlock)
+    {
+        errorBlock(result);
+    }
+    else
+    {
+        UIAlertView * alertView = [[UIAlertView alloc] initWithTitle:@"温馨提示" message:result.errorStr delegate:nil cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+        [alertView show];
+    }
 }
 
 + (MKNetworkOperation *)loadJson:(NSString *)urlParam
