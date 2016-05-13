@@ -43,7 +43,7 @@ static NSString * Checkcode   = @""; //Userid和Logintime组合加密后的产�
     Userid    = [NSString stringWithFormat:@"%@", userid];
     Logintime = [NSString stringWithFormat:@"%@", loginTime];
     Checkcode = [NSString stringWithFormat:@"%@", checkCode];
-    
+
     [[NSUserDefaults standardUserDefaults] setObject:userid forKey:@"userid"];
     [[NSUserDefaults standardUserDefaults] setObject:loginTime forKey:@"loginTime"];
     [[NSUserDefaults standardUserDefaults] setObject:checkCode forKey:@"checkCode"];
@@ -55,62 +55,47 @@ static NSString * Checkcode   = @""; //Userid和Logintime组合加密后的产�
     [[NSUserDefaults standardUserDefaults] setObject:deviceToken forKey:@"deviceToken"];
 
 }
+
 //头信息赋值
-+ (NSMutableDictionary *)getCommonHeaderInfo{
++ (NSMutableDictionary *)getCommonHeaderInfo
+{
+    NSMutableDictionary *commonParams = [[NSMutableDictionary alloc] init];
     
+    Requesttime = [NSString stringWithFormat:@"%.0f",[[NSDate date] timeIntervalSince1970]];
     
+    if (![Devicetoken isKindOfClass:[NSString class]] || Devicetoken.length == 0)
+    {
+        Devicetoken = [NSString stringWithFormat:@"%@", [[NSUserDefaults standardUserDefaults] objectForKey:@"deviceToken"]];
+    }
+    
+    if (![Userid isKindOfClass:[NSString class]] || Userid.length == 0)
+    {
+        Userid = [NSString stringWithFormat:@"%@", [[NSUserDefaults standardUserDefaults] objectForKey:@"userid"]];
+    }
+    
+    if (![Logintime isKindOfClass:[NSString class]] || Logintime.length == 0)
+    {
+        Logintime = [NSString stringWithFormat:@"%@", [[NSUserDefaults standardUserDefaults] objectForKey:@"loginTime"]];
+    }
+    
+    if (![Checkcode isKindOfClass:[NSString class]] || Checkcode.length == 0)
+    {
+        Checkcode = [NSString stringWithFormat:@"%@", [[NSUserDefaults standardUserDefaults] objectForKey:@"checkCode"]];
+    }
 
-    NSMutableDictionary * commonParams=[[NSMutableDictionary alloc] init];
-    Requesttime                           = [NSString stringWithFormat:@"%.0f",[[NSDate date] timeIntervalSince1970]];
-
-    if (Devicetoken.length == 0) {
-    Devicetoken                           = [[NSUserDefaults standardUserDefaults] objectForKey:@"deviceToken"];
-    }
-    if (Userid.length == 0) {
-    Userid                                = [[NSUserDefaults standardUserDefaults] objectForKey:@"userid"];
-    }
-    if (Logintime.length == 0) {
-    Logintime                             = [[NSUserDefaults standardUserDefaults] objectForKey:@"loginTime"];
-    }
-    if (Checkcode.length == 0) {
-    Checkcode                             = [[NSUserDefaults standardUserDefaults] objectForKey:@"checkCode"];
-    }
-
-
-    [commonParams setObject:  [HaoConfig getClientInfo]     forKey:  @"Clientinfo"];
-    [commonParams setObject:  [HaoConfig getClientVersion]  forKey:  @"Clientversion" ];
-    [commonParams setObject:  Isdebug                   forKey:  @"Isdebug"];
-    [commonParams setObject:  Devicetype                forKey:  @"Devicetype"];
-//    [commonParams setObject:  Requesttime               forKey:  @"Requesttime"];
-//    [commonParams setObject:  Logintime                 forKey:  @"Logintime"];
-    if (Devicetoken) {
-        [commonParams setObject:  Devicetoken               forKey:  @"Devicetoken"];
-    } else {
-        [commonParams setObject:  @""               forKey:  @"Devicetoken"];
-    }
-    if (Requesttime) {
-        [commonParams setObject:  Requesttime               forKey:  @"Requesttime"];
-    } else
-        [commonParams setObject:  @""               forKey:  @"Requesttime"];
-    if (Userid) {
-        [commonParams setObject:  Userid                    forKey:  @"Userid"];
-    } else {
-        [commonParams setObject:  @""                    forKey:  @"Userid"];
-    }
-    if (Logintime) {
-        [commonParams setObject:  Logintime                 forKey:  @"Logintime"];
-    } else {
-        [commonParams setObject:  @""                 forKey:  @"Logintime"];
-    }
-    if (Checkcode) {
-        [commonParams setObject:  Checkcode                 forKey:  @"Checkcode"];
-    } else {
-        [commonParams setObject:  @""                 forKey:  @"Checkcode"];
-    }
+    [commonParams setObject:[HaoConfig getClientInfo]                                           forKey:@"Clientinfo"];
+    [commonParams setObject:[HaoConfig getClientVersion]                                        forKey:@"Clientversion"];
+    [commonParams setObject:Isdebug                                                             forKey:@"Isdebug"];
+    [commonParams setObject:Devicetype                                                          forKey:@"Devicetype"];
+    [commonParams setObject:Devicetoken ? [NSString stringWithFormat:@"%@", Devicetoken]  : @"" forKey:@"Devicetoken"];
+    [commonParams setObject:Requesttime ? [NSString stringWithFormat:@"%@", Requesttime]  : @"" forKey:@"Requesttime"];
+    [commonParams setObject:Userid      ? [NSString stringWithFormat:@"%@", Userid]       : @"" forKey:@"Userid"];
+    [commonParams setObject:Logintime   ? [NSString stringWithFormat:@"%@", Logintime]    : @"" forKey:@"Logintime"];
+    [commonParams setObject:Checkcode   ? [NSString stringWithFormat:@"%@", Checkcode]    : @"" forKey:@"Checkcode"];
 
     return commonParams;
-
 }
+
 //头信息加密
 + (NSMutableDictionary * )getSecretHeaders:(NSDictionary *)paramDic urlPrame:(NSString *)urlParam{
 
