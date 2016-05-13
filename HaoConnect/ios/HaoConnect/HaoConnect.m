@@ -40,13 +40,13 @@ static NSString * Checkcode   = @""; //Userid和Logintime组合加密后的产�
 
 + (void)setCurrentUserInfo:(NSString *)userid :(NSString *)loginTime :(NSString *)checkCode{
     
-    Userid = userid;
-    Logintime = loginTime;
-    Checkcode = checkCode;
-
-    [[NSUserDefaults standardUserDefaults] setObject:NSValueToString(userid) forKey:@"userid"];
-    [[NSUserDefaults standardUserDefaults] setObject:NSValueToString(loginTime) forKey:@"loginTime"];
-    [[NSUserDefaults standardUserDefaults] setObject:NSValueToString(checkCode) forKey:@"checkCode"];
+    Userid    = [NSString stringWithFormat:@"%@", userid];
+    Logintime = [NSString stringWithFormat:@"%@", loginTime];
+    Checkcode = [NSString stringWithFormat:@"%@", checkCode];
+    
+    [[NSUserDefaults standardUserDefaults] setObject:userid forKey:@"userid"];
+    [[NSUserDefaults standardUserDefaults] setObject:loginTime forKey:@"loginTime"];
+    [[NSUserDefaults standardUserDefaults] setObject:checkCode forKey:@"checkCode"];
 
 
 }
