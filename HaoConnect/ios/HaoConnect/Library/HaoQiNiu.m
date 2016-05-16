@@ -134,9 +134,20 @@ static NSMutableDictionary * operationDics;
             }
             
         }
-       completionBlock(nil);
+       else
+       {
+//           completionBlock(nil);
+           
+           NSString *errorMsg = [NSString stringWithFormat:@"%@", responseData[@"errorStr"]];
+           NSDictionary *userInfo = [NSDictionary dictionaryWithObject:errorMsg forKey:@"errorMsg"];
+           NSError *error = [NSError errorWithDomain:@"Image upload error" code:-1 userInfo:userInfo];
+           errorBlock(error);
+       }
 
     } onError:^(NSError *error) {
+        
+        NSDictionary *userInfo = [NSDictionary dictionaryWithObject:@"服务器连接失败" forKey:@"errorMsg"];
+        error = [NSError errorWithDomain:@"Server connection failed" code:-2 userInfo:userInfo];
         errorBlock(error);
     }];
     haoOp.bundleStr = bundleStr;
