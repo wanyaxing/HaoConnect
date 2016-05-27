@@ -12,4 +12,8 @@
 + (NSString*)md5:(NSString *)inputStr;
 +(NSArray *)getKeyIndexArray:(id)dic;
 +(NSString *)md5FileData:(NSData *)fileData;
+
++ (NSMutableDictionary *)exprame:(NSDictionary *)exprame addDefaultExprame:(NSString *)strExprame;
++ (NSDictionary *)dicFromString:(NSString *)str;
+
 @end

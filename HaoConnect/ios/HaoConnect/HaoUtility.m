@@ -79,4 +79,33 @@
     
     return indexArray;
 }
+
+
++ (NSMutableDictionary *)exprame:(NSDictionary *)exprame addDefaultExprame:(NSString *)strExprame
+{
+    NSMutableDictionary *tempExprame = exprame.mutableCopy;
+    
+    NSDictionary *dic = [self dicFromString:strExprame];
+    if ([dic isKindOfClass:[NSDictionary class]])
+    {
+        [tempExprame setValuesForKeysWithDictionary:dic];
+    }
+    
+    return tempExprame;
+}
+
++ (NSDictionary *)dicFromString:(NSString *)str
+{
+    if ([str isKindOfClass:[NSString class]] && str.length > 0)
+    {
+        NSString *jsonString = [str stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+        NSData *jsonData = [jsonString dataUsingEncoding:NSUTF8StringEncoding];
+        return [NSJSONSerialization JSONObjectWithData:jsonData
+                                               options:NSJSONReadingAllowFragments
+                                                 error:nil];
+    }
+    
+    return nil;
+}
+
 @end
