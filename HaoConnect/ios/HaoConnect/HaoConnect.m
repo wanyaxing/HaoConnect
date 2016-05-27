@@ -153,7 +153,7 @@ static NSString * Checkcode   = @""; //Userid和Logintime组合加密后的产�
   onCompletion:(void (^)(HaoResult *result))completionBlock
        onError:(void (^)(HaoResult *errorResult))errorBlock
 {
-    
+    NSLog(@"params ==> %@", params);
     MKNetworkOperation *op = [self loadContent:urlParam params:params method:method onCompletion:^(NSData *responseData)
     {
         @try {
