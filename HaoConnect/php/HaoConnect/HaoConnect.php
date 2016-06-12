@@ -63,6 +63,46 @@ class HaoConnect {
         HaoUtility::storeCookie('Devicetoken',$deviceToken);
     }
 
+    /**
+     * 将数组（或字典）的key和value组成%s=%s字符串
+     * 如果是字典则组成 people[height]=180;（注意：没有引号）
+     * 如果是数组则组成 people[] = 180;
+     * html前端注意，不要混用people[height]和people[]，会导致后者被转成字典哦。
+     * 尽量字典和数组使用不同变量。
+     * @param  array $array array
+     * @param  string $key   前缀
+     * @return array        [height=180,people[sex]=1]
+     */
+    protected static function getTmpArr($array,$key='')
+    {
+        $tmpArr = array();
+        if (is_array($array))
+        {
+            $isList = ( array_keys($array) !== array_keys(array_keys($array)) );
+            foreach ($array as $_key => $_value) {
+                if (!is_object($_value))
+                {
+                    $_tmp =  static::getTmpArr(
+                                            $_value
+                                            ,$key!=''
+                                                ?$key
+                                                    .($isList
+                                                        ?'['.$_key.']'
+                                                        :'[]'
+                                                     )
+                                                :$_key
+                                        );
+                    $tmpArr = array_merge($tmpArr,$_tmp);
+                }
+            }
+        }
+        else
+        {
+            $tmpArr[] = sprintf('%s=%s', $key, $array);
+        }
+        return $tmpArr;
+    }
+
     /** 根据链接、参数、头信息，取得加密后的密钥 */
     protected static function getSignature($actionUrl='',$params = array(),$headers = array())
     {
@@ -109,12 +149,7 @@ class HaoConnect {
         }
 
         //同样的，将所有表单数据也组成字符串后，放入数组。（注：file类型不包含）
-        foreach ($params as $_key => $_value) {
-            if (!is_array($_value) && !is_object($_value))
-            {
-                array_push($tmpArr, sprintf('%s=%s', $_key, $_value));
-            }
-        }
+        $tmpArr = array_merge($tmpArr , static::getTmpArr($params) );
 
         //最后，将一串约定好的密钥字符串也放入数组。（不同的项目甚至不同的版本中，可以使用不同的密钥）
         array_push($tmpArr, static::$SECRET_HAX_CONNECT);
@@ -186,6 +221,10 @@ class HaoConnect {
 
         $actionUrl = sprintf('http://%s/%s',static::$apiHost , $urlParam);
 
+        if (static::$Isdebug==1)
+        {
+            var_export($params);
+        }
     	return HaoHttpClient::loadContent($actionUrl,$params,$method,$headers);
     }
 
@@ -219,7 +258,27 @@ class HaoConnect {
     	} catch (Exception $e) {
             return HaoResult::instanceModel($content,-1,'数据解析失败，请联系管理员。',null);
         }
-        return HaoResult::instanceModel($content,-1,'未解析到正确的数据，请联系管理员。',null);
+        return HaoResult::instanceModel($content,-1,'未解析到正确的数据，请联系管理员。');
+    }
+
+    /** 请求接口，并直接读取结果中的数据 */
+    public static function find($path,$urlParam,  $params = array(),$method = METHOD_GET)
+    {
+        if ( strpos($path,'results>') !== 0 && strpos($path,'extraInfo>') !== 0 )
+        {
+            $path = 'results>'.$path;
+        }
+        $params['find_paths']=$path;
+        $result = static::request($urlParam,  $params,$method);
+        return $result->find($path);
+    }
+
+    /** 请求接口，并直接查询结果中的数据 */
+    public static function search($path,$urlParam,  $params = array(),$method = METHOD_GET)
+    {
+        $params['search_paths']=$path;
+        $result = static::request($urlParam,  $params,$method);
+        return $result->search($path);
     }
 
     /**

@@ -32,25 +32,26 @@ class HaoHttpClient {
             {
                 curl_setopt($_curl, CURLOPT_POST, true);
                 if (isset($params)) {
-                    curl_setopt($_curl, CURLOPT_POSTFIELDS, $params);
+                    // curl_setopt($_curl, CURLOPT_POSTFIELDS, $params);
+                    curl_setopt($_curl, CURLOPT_POSTFIELDS, http_build_query($params));
                 }
             }
             else
             {
                 if (!is_null($params))
                 {
-                    $_params = $params;
-                    if (is_array($params))
-                    {
-                        $_params = array();
-                        foreach ($params as $key => $value) {
-                                $_v = ($value===true)?'1':(($value===false)?'0':rawurlencode($value));
-                                array_push($_params, sprintf('%s=%s', $key, $_v));
-                        }
-                        $_params = implode('&',$_params);
-                    }
+                    // $_params = $params;
+                    // if (is_array($params))
+                    // {
+                    //     $_params = array();
+                    //     foreach ($params as $key => $value) {
+                    //             $_v = ($value===true)?'1':(($value===false)?'0':rawurlencode($value));
+                    //             array_push($_params, sprintf('%s=%s', $key, $_v));
+                    //     }
+                    //     $_params = implode('&',$_params);
+                    // }
                     $actionUrl .= strpos($actionUrl,'?')===false?'?':'&';
-                    $actionUrl .= $_params;
+                    $actionUrl .= http_build_query($params);
                 }
             }
         }

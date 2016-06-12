@@ -21,7 +21,7 @@ class HaoResult {
     // ======================== functions ========================
 
     /** 将数组初始化成对象 */
-    public static function instanceModel($results,$errorCode,$errorStr,$extraInfo)
+    public static function instanceModel($results,$errorCode=null,$errorStr=null,$extraInfo=null)
     {
 
         $modelType = 'HaoResult';
@@ -57,7 +57,7 @@ class HaoResult {
 
 
     /** 根据路径取数据，默认是results中取，也可以指定extraInfo>路径下取数据。 */
-    public function find($path)
+    public function find($path,$default=null)
     {
         $path = trim($path);
 
@@ -95,7 +95,7 @@ class HaoResult {
                     $changeValue = $changeValue[$keyItem];
                     continue;
                 }
-                $changeValue = null;
+                $changeValue = $default;
                 break;
             }
         }
@@ -217,7 +217,7 @@ class HaoResult {
         }
 
         $result = array();
-        $searchFoundCount = preg_match_all('/(^|\s)('.$path.')($|\s+)/',$this->searchIndexString,$matches);
+        preg_match_all('/(^|\s)('.$path.')($|\s+)/',$this->searchIndexString,$matches);
         if (is_array($matches) && count($matches)>=2)
         {
             foreach ($matches[2] as $pathMatched) {
@@ -227,6 +227,16 @@ class HaoResult {
 
         return $result;
 
+    }
+
+    /**
+     * 将属性results进行转化后输出。
+     * 通常用于列表页结果，可以用该方法一次性获得N个HaoResult组成的数组。
+     * @return HaoResult｜array()
+     */
+    public function results()
+    {
+        return $this->find('results>');
     }
 
     /** 判断当前实例是否目标model */
