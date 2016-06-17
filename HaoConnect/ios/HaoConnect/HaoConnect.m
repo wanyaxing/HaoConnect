@@ -229,12 +229,35 @@ static NSString * Checkcode   = @""; //Userid和Logintime组合加密后的产�
             NSDictionary *jsonDic = [NSJSONSerialization JSONObjectWithData:responseData options:NSJSONReadingAllowFragments error:&err];
             NSLog(@"jsonDic = %@", jsonDic);
             
-            HaoResult *resultData = [HaoResult instanceModel:[jsonDic objectForKey:@"results"]
-                                                   errorCode:[[jsonDic objectForKey:@"errorCode"] integerValue]
-                                                    errorStr:[jsonDic objectForKey:@"errorStr"]
-                                                   extraInfo:[jsonDic objectForKey:@"extraInfo"]];
+            HaoResult *resultData = nil;
             
-            if ([resultData isResultsOK])
+            if (jsonDic && [jsonDic isKindOfClass:[NSDictionary class]])
+            {
+                if ([[jsonDic objectForKey:@"errorCode"] isKindOfClass:[NSNull class]])
+                {
+                    NSMutableDictionary *tempJsonDic = jsonDic.mutableCopy;
+                    [tempJsonDic setObject:@"-1" forKey:@"errorCode"];
+                    [tempJsonDic setObject:@"数据异常" forKey:@"errorStr"];
+                    jsonDic = tempJsonDic;
+                    
+                    NSString *data = [[NSString alloc] initWithData:responseData encoding:NSUTF8StringEncoding];
+                    NSLog(@"[数据异常]data ============ %@", data);
+                }
+                
+                resultData = [HaoResult instanceModel:[jsonDic objectForKey:@"results"]
+                                            errorCode:[[jsonDic objectForKey:@"errorCode"] integerValue]
+                                             errorStr:[jsonDic objectForKey:@"errorStr"]
+                                            extraInfo:[jsonDic objectForKey:@"extraInfo"]];
+            }
+            else
+            {
+                resultData = [HaoResult instanceModel:nil
+                                            errorCode:-1
+                                             errorStr:@"JSON解析失败"
+                                            extraInfo:nil];
+            }
+            
+            if (resultData && [resultData isResultsOK])
             {
                 if (completionBlock)
                 {
@@ -255,7 +278,7 @@ static NSString * Checkcode   = @""; //Userid和Logintime组合加密后的产�
         @catch (NSException *exception)
         {
             NSLog(@"responseData=%@",[[NSString alloc] initWithData:responseData encoding:NSUTF8StringEncoding]);
-            HaoResult *errorResult = [HaoResult instanceModel:nil errorCode:-1 errorStr:@"JSON解析失败" extraInfo:nil];
+            HaoResult *errorResult = [HaoResult instanceModel:nil errorCode:-1 errorStr:@"数据异常" extraInfo:nil];
             [[self class] errorWithErrorBlock:errorBlock result:errorResult];
         }
         @finally
