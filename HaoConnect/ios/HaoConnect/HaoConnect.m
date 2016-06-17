@@ -148,12 +148,80 @@ static NSString * Checkcode   = @""; //Userid和Logintime组合加密后的产�
 }
 
 + (MKNetworkOperation *)request:(NSString *)urlParam
-        params:(NSMutableDictionary *)params
-    httpMethod:(NSString *)method
-  onCompletion:(void (^)(HaoResult *result))completionBlock
-       onError:(void (^)(HaoResult *errorResult))errorBlock
+                         params:(NSMutableDictionary *)params
+                     httpMethod:(NSString *)method
+                   onCompletion:(void (^)(HaoResult *result))completionBlock
+                        onError:(void (^)(HaoResult *errorResult))errorBlock
 {
-    NSLog(@"params ==> %@", params);
+    return [self requestWithAction:RequestActionNull
+                        actionPath:nil
+                          urlParam:urlParam
+                            params:params
+                        httpMethod:method
+                      onCompletion:completionBlock
+                           onError:errorBlock];
+}
+
++ (MKNetworkOperation *)requestFindWithPath:(NSString *)path
+                                   urlParam:(NSString *)urlParam
+                                     params:(NSMutableDictionary *)params
+                                 httpMethod:(NSString *)method
+                               onCompletion:(void (^)(HaoResult *result))completionBlock
+                                    onError:(void (^)(HaoResult *errorResult))errorBlock
+{
+    path = [path isKindOfClass:[NSString class]] && path.length != 0 ? path : nil;
+    RequestAction action = path ? RequestActionFind : RequestActionNull;
+    
+    return [self requestWithAction:action
+                        actionPath:path
+                          urlParam:urlParam
+                            params:params
+                        httpMethod:method
+                      onCompletion:completionBlock
+                           onError:errorBlock];
+}
+
++ (MKNetworkOperation *)requestSearchWithPath:(NSString *)path
+                                     urlParam:(NSString *)urlParam
+                                       params:(NSMutableDictionary *)params
+                                   httpMethod:(NSString *)method
+                                 onCompletion:(void (^)(HaoResult *result))completionBlock
+                                      onError:(void (^)(HaoResult *errorResult))errorBlock
+{
+    path = [path isKindOfClass:[NSString class]] && path.length != 0 ? path : nil;
+    RequestAction action = path ? RequestActionSearch : RequestActionNull;
+    
+    return [self requestWithAction:action
+                        actionPath:path
+                          urlParam:urlParam
+                            params:params
+                        httpMethod:method
+                      onCompletion:completionBlock
+                           onError:errorBlock];
+}
+
++ (MKNetworkOperation *)requestWithAction:(RequestAction)action
+                               actionPath:(NSString *)actionPath
+                                 urlParam:(NSString *)urlParam
+                                   params:(NSMutableDictionary *)params
+                               httpMethod:(NSString *)method
+                             onCompletion:(void (^)(HaoResult *result))completionBlock
+                                  onError:(void (^)(HaoResult *errorResult))errorBlock
+{
+    if (action == RequestActionFind)
+    {
+        params = [NSMutableDictionary dictionaryWithDictionary:params];
+        NSDictionary *findDic = @{@"find_paths" : actionPath};
+        [params setValuesForKeysWithDictionary:findDic];
+    }
+    
+    if (action == RequestActionSearch)
+    {
+        params = [NSMutableDictionary dictionaryWithDictionary:params];
+        NSDictionary *searchDic = @{@"search_paths" : actionPath};
+        [params setValuesForKeysWithDictionary:searchDic];
+    }
+    
     MKNetworkOperation *op = [self loadContent:urlParam params:params method:method onCompletion:^(NSData *responseData)
     {
         @try {
@@ -161,12 +229,35 @@ static NSString * Checkcode   = @""; //Userid和Logintime组合加密后的产�
             NSDictionary *jsonDic = [NSJSONSerialization JSONObjectWithData:responseData options:NSJSONReadingAllowFragments error:&err];
             NSLog(@"jsonDic = %@", jsonDic);
             
-            HaoResult *resultData = [HaoResult instanceModel:[jsonDic objectForKey:@"results"]
-                                                   errorCode:[[jsonDic objectForKey:@"errorCode"] integerValue]
-                                                    errorStr:[jsonDic objectForKey:@"errorStr"]
-                                                   extraInfo:[jsonDic objectForKey:@"extraInfo"]];
+            HaoResult *resultData = nil;
             
-            if ([resultData isResultsOK])
+            if (jsonDic && [jsonDic isKindOfClass:[NSDictionary class]])
+            {
+                if ([[jsonDic objectForKey:@"errorCode"] isKindOfClass:[NSNull class]])
+                {
+                    NSMutableDictionary *tempJsonDic = jsonDic.mutableCopy;
+                    [tempJsonDic setObject:@"-1" forKey:@"errorCode"];
+                    [tempJsonDic setObject:@"数据异常" forKey:@"errorStr"];
+                    jsonDic = tempJsonDic;
+                    
+                    NSString *data = [[NSString alloc] initWithData:responseData encoding:NSUTF8StringEncoding];
+                    NSLog(@"[数据异常]data ============ %@", data);
+                }
+                
+                resultData = [HaoResult instanceModel:[jsonDic objectForKey:@"results"]
+                                            errorCode:[[jsonDic objectForKey:@"errorCode"] integerValue]
+                                             errorStr:[jsonDic objectForKey:@"errorStr"]
+                                            extraInfo:[jsonDic objectForKey:@"extraInfo"]];
+            }
+            else
+            {
+                resultData = [HaoResult instanceModel:nil
+                                            errorCode:-1
+                                             errorStr:@"JSON解析失败"
+                                            extraInfo:nil];
+            }
+            
+            if (resultData && [resultData isResultsOK])
             {
                 if (completionBlock)
                 {
@@ -187,7 +278,7 @@ static NSString * Checkcode   = @""; //Userid和Logintime组合加密后的产�
         @catch (NSException *exception)
         {
             NSLog(@"responseData=%@",[[NSString alloc] initWithData:responseData encoding:NSUTF8StringEncoding]);
-            HaoResult *errorResult = [HaoResult instanceModel:nil errorCode:-1 errorStr:@"JSON解析失败" extraInfo:nil];
+            HaoResult *errorResult = [HaoResult instanceModel:nil errorCode:-1 errorStr:@"数据异常" extraInfo:nil];
             [[self class] errorWithErrorBlock:errorBlock result:errorResult];
         }
         @finally
