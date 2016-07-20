@@ -203,7 +203,7 @@ class HaoConnect {
         $headers['Signature']       = static::getSignature($actionUrl,$params,$headers);
 
         /** 作为转发服务器，也要转发用户的IP，声明自己的代理行为 */
-        if ($headers['Clientversion']==2 && isset($_SERVER))
+        if ($headers['Devicetype']==2 && isset($_SERVER))
         {
             $headers['X_FORWARDED_FOR'] = $_SERVER['REMOTE_ADDR'];
             $headers['CLIENT_IP']       = $_SERVER['REMOTE_ADDR'];
