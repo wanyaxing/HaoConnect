@@ -74,10 +74,9 @@ public class HaoUtility {
             md = MessageDigest.getInstance(method);
             md.update(str.getBytes());
             dstr = new BigInteger(1, md.digest()).toString(16);
-            if (dstr.length() < 32) {
-                for (int i = 0; i < 32 - dstr.length(); i++) {
-                    dstr = "0" + dstr;
-                }
+            int dstrCount = 32 - dstr.length();
+            for (int i = 0; i < dstrCount; i++) {
+                dstr = "0" + dstr;
             }
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
@@ -146,8 +145,8 @@ public class HaoUtility {
         }
     }
 
-    public static void V(String str){
-        Log.v("GWJ=====>",str);
+    public static void V(String str) {
+        Log.v("GWJ=====>", str);
     }
 
     /**
