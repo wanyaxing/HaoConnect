@@ -28,33 +28,39 @@ class HaoHttpClient {
             $method =  ($params == null)?METHOD_GET:METHOD_POST;
         }
         if (isset($method)) {
-            if (strcasecmp($method,METHOD_POST)==0)
+            if (strcasecmp($method,'post')==0)
             {
                 curl_setopt($_curl, CURLOPT_POST, true);
                 if (isset($params)) {
-                    // curl_setopt($_curl, CURLOPT_POSTFIELDS, $params);
-                    curl_setopt($_curl, CURLOPT_POSTFIELDS, http_build_query($params));
+                    $isObjectInParams = false;
+                    if (is_array($params))
+                    {
+                        foreach ($params as $param) {
+                            if (is_object($param))
+                            {
+                                $isObjectInParams = true;
+                                break;
+                            }
+                        }
+                    }
+                    if ($isObjectInParams)
+                    {
+                        curl_setopt($_curl, CURLOPT_POSTFIELDS, $params);
+                    }
+                    else
+                    {
+                        curl_setopt($_curl, CURLOPT_POSTFIELDS, http_build_query($params));
+                    }
                 }
             }
             else
             {
                 if (!is_null($params))
                 {
-                    // $_params = $params;
-                    // if (is_array($params))
-                    // {
-                    //     $_params = array();
-                    //     foreach ($params as $key => $value) {
-                    //             $_v = ($value===true)?'1':(($value===false)?'0':rawurlencode($value));
-                    //             array_push($_params, sprintf('%s=%s', $key, $_v));
-                    //     }
-                    //     $_params = implode('&',$_params);
-                    // }
                     $actionUrl .= strpos($actionUrl,'?')===false?'?':'&';
                     $actionUrl .= http_build_query($params);
                 }
-            }
-        }
+            }        }
         curl_setopt($_curl, CURLOPT_URL,            $actionUrl);
         curl_setopt($_curl, CURLOPT_FOLLOWLOCATION, true);
         curl_setopt($_curl, CURLOPT_TIMEOUT,        30);
