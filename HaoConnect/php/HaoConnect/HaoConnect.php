@@ -86,7 +86,7 @@ class HaoConnect {
                                             $_value
                                             ,$key!=''
                                                 ?$key
-                                                    .($isList
+                                                    .( ( $isList || is_array($_value) )
                                                         ?'['.$_key.']'
                                                         :'[]'
                                                      )
@@ -253,7 +253,12 @@ class HaoConnect {
             $tmpResult = json_decode($content,true);
             if ( isset($tmpResult['modelType']) && $tmpResult['modelType'] == 'HaoResult' )
             {
-        		return HaoResult::instanceModel($tmpResult['results'],$tmpResult['errorCode'],$tmpResult['errorStr'],$tmpResult['extraInfo'],$tmpResult['resultCount']);
+        		$result = HaoResult::instanceModel($tmpResult['results'],$tmpResult['errorCode'],$tmpResult['errorStr'],$tmpResult['extraInfo'],$tmpResult['resultCount']);
+                if ($result->isErrorCode(6))
+                {
+                    HaoConnect::setCurrentUserInfo('','','');
+                }
+                return $result;
             }
     	} catch (Exception $e) {
             return HaoResult::instanceModel($content,-1,'数据解析失败，请联系管理员。',null);
