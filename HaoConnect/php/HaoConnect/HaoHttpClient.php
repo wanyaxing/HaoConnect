@@ -80,7 +80,8 @@ class HaoHttpClient {
                         $_headerData[] = $value;
                     }
                 }
-                $headers = array(implode("\n",$_headerData));
+                // $headers = array(implode("\n",$_headerData));
+                $headers = $_headerData;
             }
             curl_setopt($_curl, CURLOPT_HTTPHEADER, $headers);
         }

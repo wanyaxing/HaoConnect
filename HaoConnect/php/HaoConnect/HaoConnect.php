@@ -29,9 +29,9 @@ class HaoConnect {
 
     Public static $Requesttime   = '0';                                  //请求时的时间戳，单位：秒
 
-    Public static $Userid        = '';                                  //当前用户ID，登录后可获得。
-    Public static $Logintime     = '';                                  //登录时间，时间戳，单位：秒，数据来自服务器
-    Public static $Checkcode     = '';                                  //Userid和Logintime组合加密后的产物，用于进行用户信息加密。数据来自服务器
+    Public static $Userid        = '0';                                  //当前用户ID，登录后可获得。
+    Public static $Logintime     = '0';                                  //登录时间，时间戳，单位：秒，数据来自服务器
+    Public static $Checkcode     = '0';                                  //Userid和Logintime组合加密后的产物，用于进行用户信息加密。数据来自服务器
 
     /**
      *  请求加密后的校验串，服务器会使用同样规则加密请求后，比较校验串是否一致，从而防止请求内容被纂改。
@@ -166,7 +166,7 @@ class HaoConnect {
 
     protected static function getSecretHeaders($urlParam,$params = array())
     {
-        if (static::$Userid == '' && isset($_COOKIE['Userid']))
+        if (static::$Userid == '0' && isset($_COOKIE['Userid']))
         {
             static::$Userid    = $_COOKIE['Userid'];
             static::$Logintime = $_COOKIE['Logintime'];
