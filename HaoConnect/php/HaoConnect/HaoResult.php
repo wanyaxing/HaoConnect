@@ -24,7 +24,7 @@ class HaoResult {
     public static function instanceModel($results,$errorCode=null,$errorStr=null,$extraInfo=null)
     {
 
-        $modelType = 'HaoResult';
+        $modelType = static::class;
 
         if (is_array($results))
         {
@@ -34,7 +34,7 @@ class HaoResult {
             }
         }
 
-	    $modelName = $modelType . ( $modelType != 'HaoResult' ? 'Result' : '' );
+        $modelName = $modelType . ( preg_match('/^\w+Result$/',$modelType) ? '' : 'Result' );
 	    if (class_exists($modelName))
 	    {
 	        $object = new $modelName();
