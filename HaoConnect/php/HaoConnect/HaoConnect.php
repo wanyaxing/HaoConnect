@@ -248,6 +248,13 @@ class HaoConnect {
      */
     public static function request($urlParam,  $params = array(),$method = METHOD_GET)
     {
+        if ($params==null)
+        {
+            $params = array();
+        }
+        $params = array_filter($params,function($var){
+            return $var!==null;
+        });
     	$content = static::loadContent($urlParam,$params,$method);
     	try {
             $tmpResult = json_decode($content,true);
