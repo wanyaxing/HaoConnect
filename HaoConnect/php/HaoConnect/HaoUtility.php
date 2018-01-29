@@ -88,4 +88,27 @@ class HaoUtility {
     public static function storeCookie($p_key, $p_value, $p_time=null, $p_path='/') {
         setcookie($p_key, $p_value, $p_value==null?time()-1:(is_int($p_time)?time()+$p_time:0), $p_path);
     }
+
+    /*参数格式转换（主要处理布尔值和null值）*/
+    public static function paramsCheck(&$params)
+    {
+        if (is_array($params))
+        {
+            $isList = ( array_keys($params) !== array_keys(array_keys($params)) );
+            foreach ($params as $_key => &$_value) {
+                if (is_array($_value))
+                {
+                    static::paramsCheck($_value);
+                }
+                else if (is_bool($_value))
+                {
+                    $_value = $_value?1:0;
+                }
+                else if ($_value===null)
+                {
+                    $_value = '';
+                }
+            }
+        }
+    }
 }

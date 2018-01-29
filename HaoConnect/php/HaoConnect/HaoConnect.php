@@ -255,6 +255,7 @@ class HaoConnect {
         $params = array_filter($params,function($var){
             return $var!==null;
         });
+        HaoUtility::paramsCheck($params);
     	$content = static::loadContent($urlParam,$params,$method);
     	try {
             $tmpResult = json_decode($content,true);
