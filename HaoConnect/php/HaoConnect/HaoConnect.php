@@ -224,7 +224,14 @@ class HaoConnect {
     /** 请求API地址，获得字符串 */
     public static function loadContent($urlParam, $params = array(), $method = METHOD_GET, $pTimeout=30, $responseType='body')
     {
-        /** 更新下用户信息（如果用户信息尚未更新的话） */
+        if ($params==null)
+        {
+            $params = array();
+        }
+        $params = array_filter($params,function($var){
+            return $var!==null;
+        });
+        HaoUtility::paramsCheck($params);
 
         $headers = static::getSecretHeaders($urlParam,$params);
 
@@ -257,14 +264,6 @@ class HaoConnect {
      */
     public static function request($urlParam,  $params = array(),$method = METHOD_GET)
     {
-        if ($params==null)
-        {
-            $params = array();
-        }
-        $params = array_filter($params,function($var){
-            return $var!==null;
-        });
-        HaoUtility::paramsCheck($params);
         $responseText = static::loadContent($urlParam,$params,$method);
         if (static::$Isdebug==1)
         {
