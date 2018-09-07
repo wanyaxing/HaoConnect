@@ -29,9 +29,12 @@ class HaoConnect {
 
     Public static $Requesttime   = '0';                                  //请求时的时间戳，单位：秒
 
-    Public static $Userid        = '';                                  //当前用户ID，登录后可获得。
-    Public static $Logintime     = '';                                  //登录时间，时间戳，单位：秒，数据来自服务器
-    Public static $Checkcode     = '';                                  //Userid和Logintime组合加密后的产物，用于进行用户信息加密。数据来自服务器
+    Public static $Userid        = null;                                  //当前用户ID，登录后可获得。
+    Public static $Logintime     = null;                                  //登录时间，时间戳，单位：秒，数据来自服务器
+    Public static $Checkcode     = null;                                  //Userid和Logintime组合加密后的产物，用于进行用户信息加密。数据来自服务器
+
+    Public static $IF_NONE_MATCH     = null;                              //用于etag缓存控制
+    Public static $last     = null;                              //用于etag缓存控制
 
     /**
      *  请求加密后的校验串，服务器会使用同样规则加密请求后，比较校验串是否一致，从而防止请求内容被纂改。
@@ -150,6 +153,7 @@ class HaoConnect {
 
         //同样的，将所有表单数据也组成字符串后，放入数组。（注：file类型不包含）
         $tmpArr = array_merge($tmpArr , static::getTmpArr($params) );
+        // var_export($tmpArr);
 
         //最后，将一串约定好的密钥字符串也放入数组。（不同的项目甚至不同的版本中，可以使用不同的密钥）
         array_push($tmpArr, static::$SECRET_HAX_CONNECT);
@@ -166,7 +170,7 @@ class HaoConnect {
 
     protected static function getSecretHeaders($urlParam,$params = array())
     {
-        if (static::$Userid == '' && isset($_COOKIE['Userid']))
+        if (static::$Userid === null && isset($_COOKIE['Userid']))
         {
             static::$Userid    = $_COOKIE['Userid'];
             static::$Logintime = $_COOKIE['Logintime'];
@@ -209,15 +213,20 @@ class HaoConnect {
             $headers['CLIENT_IP']       = $_SERVER['REMOTE_ADDR'];
         }
 
+        if (static::$IF_NONE_MATCH)
+        {
+            $headers['If-None-Match']       = static::$IF_NONE_MATCH;
+        }
+
         return $headers;
     }
 
     /** 请求API地址，获得字符串 */
-    public static function loadContent($urlParam, $params = array(), $method = METHOD_GET)
+    public static function loadContent($urlParam, $params = array(), $method = METHOD_GET, $pTimeout=30, $responseType='body')
     {
-    	/** 更新下用户信息（如果用户信息尚未更新的话） */
+        /** 更新下用户信息（如果用户信息尚未更新的话） */
 
-    	$headers = static::getSecretHeaders($urlParam,$params);
+        $headers = static::getSecretHeaders($urlParam,$params);
 
         $actionUrl = sprintf('http://%s/%s',static::$apiHost , $urlParam);
 
@@ -225,7 +234,7 @@ class HaoConnect {
         {
             var_export($params);
         }
-    	return HaoHttpClient::loadContent($actionUrl,$params,$method,$headers);
+        return HaoHttpClient::loadContent($actionUrl,$params,$method,$headers,$pTimeout, $responseType);
     }
 
     public static function loadJson($urlParam,  $params = array(),$method = METHOD_GET)
@@ -256,22 +265,41 @@ class HaoConnect {
             return $var!==null;
         });
         HaoUtility::paramsCheck($params);
-    	$content = static::loadContent($urlParam,$params,$method);
-    	try {
-            $tmpResult = json_decode($content,true);
+        $responseText = static::loadContent($urlParam,$params,$method);
+        if (static::$Isdebug==1)
+        {
+            print($responseText);
+        }
+        try {
+            $tmpResult = json_decode($responseText,true);
             if ( isset($tmpResult['modelType']) && $tmpResult['modelType'] == 'HaoResult' )
             {
-        		$result = HaoResult::instanceModel($tmpResult['results'],$tmpResult['errorCode'],$tmpResult['errorStr'],$tmpResult['extraInfo'],$tmpResult['resultCount']);
+                $result = HaoResult::instanceModel($tmpResult['results'],$tmpResult['errorCode'],$tmpResult['errorStr'],$tmpResult['extraInfo'],$responseText);
                 if ($result->isErrorCode(6))
                 {
                     HaoConnect::setCurrentUserInfo('','','');
                 }
                 return $result;
             }
-    	} catch (Exception $e) {
-            return HaoResult::instanceModel($content,-1,'数据解析失败，请联系管理员。',null);
+        } catch (Exception $e) {
+            return HaoResult::instanceModel($responseText,-1,'数据解析失败，请联系管理员。',null);
         }
-        return HaoResult::instanceModel($content,-1,'未解析到正确的数据，请联系管理员。');
+        // print_r($urlParam);
+        // print_r($params);
+        // print_r($method);
+        // print_r($responseText);
+        return HaoResult::instanceModel($responseText,-1,'未解析到正确的数据，请联系管理员。');
+    }
+
+    /** 只取查询结果的首条记录 */
+    public static function requestFirstInList($urlParam,  $params = array(),$method = METHOD_GET)
+    {
+        if (!isset($params['size']))
+        {
+            $params['size']=1;
+        }
+        $result = static::request($urlParam,  $params, $method);
+        return $result->find('results>0');
     }
 
     /** 请求接口，并直接读取结果中的数据 */

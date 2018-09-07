@@ -15,16 +15,17 @@ class HaoResult {
     public $results;
     public $modelType;
     public $searchIndexString;
+    public $responseText;
 
     public $pathCache;
 
     // ======================== functions ========================
 
     /** 将数组初始化成对象 */
-    public static function instanceModel($results,$errorCode=null,$errorStr=null,$extraInfo=null)
+    public static function instanceModel($results,$errorCode=null,$errorStr=null,$extraInfo=null,$responseText=null)
     {
 
-        $modelType = static::class;
+        $modelType = 'HaoResult';
 
         if (is_array($results))
         {
@@ -34,7 +35,7 @@ class HaoResult {
             }
         }
 
-        $modelName = $modelType . ( preg_match('/^\w+Result$/',$modelType) ? '' : 'Result' );
+	    $modelName = $modelType . ( $modelType != 'HaoResult' ? 'Result' : '' );
 	    if (class_exists($modelName))
 	    {
 	        $object = new $modelName();
@@ -49,6 +50,7 @@ class HaoResult {
         $object ->extraInfo   = $extraInfo;
         $object ->results     = $results;
         $object ->modelType   = $modelType;
+        $object ->responseText     = $responseText;
 
         $object ->pathCache   = array();
 
@@ -99,7 +101,10 @@ class HaoResult {
                 break;
             }
         }
-
+        if ($default!=null && $changeValue==null )
+        {
+            $changeValue = $default;
+        }
         $value = $this->value($changeValue);
         $this->pathCache[$path] = $value;
         return $value;

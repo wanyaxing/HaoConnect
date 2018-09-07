@@ -19,9 +19,8 @@ class HaoHttpClient {
      * @param string result all/header/body(default)
      * @return array|string 根据设置参数里的result返回结果, 默认是body
      */
-    public static function loadContent($actionUrl, $params=null, $method = null, $headers=null){
+    public static function loadContent($actionUrl, $params=null, $method = null, $headers=null, $pTimeout=30, $responseType='body'){
         $pTimeout=30;
-        $pResult='body';
         $_curl = curl_init();
         if ($method === null)
         {
@@ -88,10 +87,10 @@ class HaoHttpClient {
         if (isset($pTimeout)) {
             curl_setopt($_curl, CURLOPT_TIMEOUT, $pTimeout);
         }
-        if (isset($pResult)) {
-            if ($pResult=='all') {
+        if (isset($responseType)) {
+            if ($responseType=='all') {
                 curl_setopt($_curl, CURLOPT_HEADER, true);
-            } else if ($pResult=='header') {
+            } else if ($responseType=='header') {
                 curl_setopt($_curl, CURLOPT_NOBODY, true);
                 curl_setopt($_curl, CURLOPT_HEADER, true);
             }
@@ -99,7 +98,7 @@ class HaoHttpClient {
 
         $_resp = curl_exec($_curl);
         $_result = $_resp;
-        if (isset($pResult) && $pResult=='all'){
+        if (isset($responseType) && $responseType=='all'){
             $_info = curl_getinfo($_curl);
             $_headerSize = $_info['header_size'];
             $_result = array(
@@ -126,8 +125,8 @@ class HaoHttpClient {
      * @param string url
      * @return array Json 数组
      */
-    public static function loadJson($actionUrl,  $params=null,$method=null, $headers=null, $pTimeout=30, $pResult='body'){
-        $_c = static::loadContent($actionUrl, $params, $method, $headers, $pTimeout, $pResult);
+    public static function loadJson($actionUrl,  $params=null,$method=null, $headers=null, $pTimeout=30, $responseType='body'){
+        $_c = static::loadContent($actionUrl, $params, $method, $headers, $pTimeout, $responseType);
         return isset($_c)?json_decode($_c, true):$_c;
     }
 
